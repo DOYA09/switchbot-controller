@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>SwitchBot Control</title>
+<script src="pi-common.js"></script>
+<style>
+	:root { color-scheme: dark; }
+	* { box-sizing: border-box; }
+	body {
+		margin: 0;
+		padding: 8px 12px 20px;
+		font-family: -apple-system, "Segoe UI", sans-serif;
+		font-size: 12px;
+		background: #2d2d2d;
+		color: #d8d8d8;
+	}
+	.op-title {
+		font-weight: 600;
+		font-size: 12px;
+		letter-spacing: 0.02em;
+		color: #9fe6da;
+		margin: 20px 0 6px 2px;
+	}
+	.hint {
+		font-size: 10.5px;
+		opacity: 0.65;
+		margin: 2px 2px 10px 2px;
+		line-height: 1.5;
+	}
+	.field {
+		display: flex;
+		align-items: center;
+		min-height: 30px;
+		padding: 3px 0;
+		border-bottom: 1px solid #3c3c3c;
+		min-width: 0;
+	}
+	.field > label {
+		flex: 0 0 108px;
+		color: #a6a6a6;
+		font-size: 11px;
+	}
+	.field > .control {
+		flex: 1;
+		display: flex;
+		gap: 6px;
+		align-items: center;
+		min-width: 0;
+	}
+	input[type="text"], input[type="password"], input[type="number"], select {
+		flex: 0 1 170px;
+		width: 170px;
+		background: #1e1e1e;
+		border: 1px solid #444;
+		color: #e6e6e6;
+		border-radius: 4px;
+		padding: 5px 6px;
+		font-size: 11.5px;
+		min-width: 0;
+	}
+	input:focus, select:focus { outline: 1px solid #36c7b0; }
+	button {
+		background: #3a3a3a;
+		border: 1px solid #4c4c4c;
+		color: #d8d8d8;
+		border-radius: 4px;
+		padding: 5px 10px;
+		font-size: 11px;
+		cursor: pointer;
+		white-space: nowrap;
+	}
+	button:hover { background: #454545; }
+	button:disabled { opacity: 0.5; cursor: default; }
+	.checkbox-row { display: flex; align-items: center; gap: 6px; }
+	.checkbox-row input { width: auto; flex: none; }
+	.status-msg { font-size: 10.5px; margin: 2px 2px 8px; min-height: 14px; }
+	.status-msg.error { color: #ff8a8a; }
+	.status-msg.ok { color: #8adfc4; }
+</style>
+</head>
+<body>
+
+	<!-- ===== SwitchBot API 共通設定（全キーで共有） ===== -->
+	<div class="field">
+		<label data-i18n="label.token">トークン</label>
+		<div class="control"><input type="password" id="g-token" autocomplete="off" /></div>
+	</div>
+	<div class="field">
+		<label data-i18n="label.secret">クライアントシークレット</label>
+		<div class="control"><input type="password" id="g-secret" autocomplete="off" /></div>
+	</div>
+	<div class="field">
+		<label></label>
+		<div class="control checkbox-row">
+			<input type="checkbox" id="show-credentials" />
+			<label for="show-credentials" data-i18n="label.show_credentials">入力内容を表示</label>
+		</div>
+	</div>
+	<div class="hint" data-i18n="hint.credentials">トークン / クライアントシークレットは他のSwitchBotアクションと共有されます。SwitchBotアプリの「プロフィール」→「設定」→バージョン表示を連続タップすると表示される「開発者向けオプション」から取得できます。</div>
+
+	<div id="groups"></div>
+
+	<div id="global-status" class="status-msg"></div>
+
+	<script>
+	(function () {
+		"use strict";
+
+		var PI = window.SwitchBotPI;
+
+		var GROUPS = [
+			{ key: "single", titleKey: "group.single" },
+			{ key: "double", titleKey: "group.double" },
+			{ key: "hold", titleKey: "group.hold" }
+		];
+
+		var DEFAULT_OPERATION = {
+			enabled: false,
+			targetType: "device",
+			deviceId: "",
+			deviceName: "",
+			deviceType: "",
+			sceneId: "",
+			sceneName: "",
+			command: "",
+			customCommand: "",
+			commandType: "command",
+			parameter: "default"
+		};
+
+		var websocket = null;
+		var piUUID = null;
+		var actionInfo = null;
+		var settings = {};
+		var globalSettings = {};
+		var deviceList = [];
+		var sceneList = [];
+		var suppressSave = false;
+		var lastDeviceCacheAt = 0;
+		var lastSceneCacheAt = 0;
+		var lastErrorAt = 0;
+
+		// ---------- ユーティリティ ----------
+		function el(id) { return document.getElementById(id); }
+		function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+		function ensureDefaults() {
+			GROUPS.forEach(function (g) {
+				if (!settings[g.key]) settings[g.key] = clone(DEFAULT_OPERATION);
+				else {
+					Object.keys(DEFAULT_OPERATION).forEach(function (k) {
+						if (settings[g.key][k] === undefined) settings[g.key][k] = DEFAULT_OPERATION[k];
+					});
+				}
+			});
+		}
+
+		// ---------- HTML組み立て ----------
+		function buildGroupHtml(group) {
+			var k = group.key;
+			return "" +
+				'<div class="op-title">' + PI.t(group.titleKey) + '</div>' +
+				'<div class="field">' +
+					'<label>' + PI.t("label.enabled") + '</label>' +
+					'<div class="control checkbox-row">' +
+						'<input type="checkbox" id="' + k + '-enabled" />' +
+					'</div>' +
+				'</div>' +
+				'<div class="field">' +
+					'<label>' + PI.t("label.target") + '</label>' +
+					'<div class="control">' +
+						'<select id="' + k + '-targetType">' +
+							'<option value="device">' + PI.t("option.target.device") + '</option>' +
+							'<option value="scene">' + PI.t("option.target.scene") + '</option>' +
+						'</select>' +
+					'</div>' +
+				'</div>' +
+				'<div id="' + k + '-device-fields">' +
+					'<div class="field">' +
+						'<label>' + PI.t("label.device") + '</label>' +
+						'<div class="control">' +
+							'<select id="' + k + '-deviceSelect"></select>' +
+							'<button type="button" data-refresh="devices" data-group="' + k + '">' + PI.t("button.refresh") + '</button>' +
+						'</div>' +
+					'</div>' +
+					'<div class="field">' +
+						'<label>' + PI.t("label.command") + '</label>' +
+						'<div class="control"><select id="' + k + '-command"></select></div>' +
+					'</div>' +
+					'<div class="field" id="' + k + '-param-field" style="display:none">' +
+						'<label id="' + k + '-param-label">' + PI.t("label.parameter") + '</label>' +
+						'<div class="control"><input type="text" id="' + k + '-parameter" /></div>' +
+					'</div>' +
+					PI.buildAcDetailFieldsHtml(k + "-") + PI.buildAcAdjustFieldHtml(k + "-") +
+					'<div class="field" id="' + k + '-custom-command-field" style="display:none">' +
+						'<label>' + PI.t("label.custom_command_name") + '</label>' +
+						'<div class="control"><input type="text" id="' + k + '-customCommand" placeholder="' + PI.t("placeholder.custom_command") + '" /></div>' +
+					'</div>' +
+					'<div class="field" id="' + k + '-command-type-field" style="display:none">' +
+						'<label>' + PI.t("label.command_type") + '</label>' +
+						'<div class="control">' +
+							'<select id="' + k + '-commandType">' +
+								'<option value="command">command</option>' +
+								'<option value="customize">customize</option>' +
+							'</select>' +
+						'</div>' +
+					'</div>' +
+				'</div>' +
+				'<div id="' + k + '-scene-fields">' +
+					'<div class="field">' +
+						'<label>' + PI.t("label.scene") + '</label>' +
+						'<div class="control">' +
+							'<select id="' + k + '-sceneSelect"></select>' +
+							'<button type="button" data-refresh="scenes" data-group="' + k + '">' + PI.t("button.refresh") + '</button>' +
+						'</div>' +
+					'</div>' +
+				'</div>';
+		}
+
+		function buildAllGroups() {
+			var html = "";
+			GROUPS.forEach(function (g) { html += buildGroupHtml(g); });
+			el("groups").innerHTML = html;
+
+			bindEvents();
+		}
+
+		function refreshCommandOptions(k) {
+			var op = settings[k];
+			var select = el(k + "-command");
+			var previous = op.command;
+			select.innerHTML = PI.buildCommandOptionsHtml(op.deviceType);
+
+			var allowedValues = Array.prototype.map.call(select.options, function (o) { return o.value; });
+			if (allowedValues.indexOf(previous) === -1) {
+				op.command = allowedValues[0] !== undefined ? allowedValues[0] : "";
+			}
+			select.value = op.command;
+		}
+
+		// ---------- フォーム ⇔ settings 反映 ----------
+		function applySettingsToForm() {
+			ensureDefaults();
+			suppressSave = true;
+
+			GROUPS.forEach(function (g) {
+				var k = g.key;
+				var op = settings[k];
+				el(k + "-enabled").checked = !!op.enabled;
+				el(k + "-targetType").value = op.targetType;
+				refreshCommandOptions(k);
+				el(k + "-parameter").value = op.parameter;
+				el(k + "-customCommand").value = op.customCommand;
+				el(k + "-commandType").value = op.commandType;
+				PI.applyAcFieldsToForm(el, k + "-", op);
+
+				PI.populateSelect(el(k + "-deviceSelect"), deviceList, "deviceId", "deviceName", op.deviceId, op.deviceName, "deviceType");
+				PI.populateSelect(el(k + "-sceneSelect"), sceneList, "sceneId", "sceneName", op.sceneId, op.sceneName);
+
+				updateTargetVisibility(k);
+				updateParamVisibility(k);
+			});
+
+			suppressSave = false;
+		}
+
+		function updateTargetVisibility(k) {
+			var isDevice = el(k + "-targetType").value === "device";
+			el(k + "-device-fields").style.display = isDevice ? "" : "none";
+			el(k + "-scene-fields").style.display = isDevice ? "none" : "";
+		}
+
+		function updateParamVisibility(k, forceReset) {
+			var command = el(k + "-command").value;
+			var meta = PI.getParamMeta(command);
+			var isCustom = command === "custom";
+
+			el(k + "-custom-command-field").style.display = isCustom ? "" : "none";
+			el(k + "-command-type-field").style.display = isCustom ? "" : "none";
+			PI.updateAcFieldVisibility(el, k + "-", command);
+
+			if (meta) {
+				el(k + "-param-field").style.display = "";
+				el(k + "-param-label").textContent = meta.label;
+				el(k + "-parameter").placeholder = meta.placeholder;
+				var current = el(k + "-parameter").value;
+				if (forceReset || !current || current === "default") {
+					el(k + "-parameter").value = meta.default;
+					writeSetting(k + ".parameter", meta.default);
+				}
+			} else {
+				el(k + "-param-field").style.display = "none";
+			}
+		}
+
+		function writeSetting(path, value) {
+			var keys = path.split(".");
+			var cur = settings;
+			for (var i = 0; i < keys.length - 1; i++) {
+				if (!cur[keys[i]]) cur[keys[i]] = {};
+				cur = cur[keys[i]];
+			}
+			cur[keys[keys.length - 1]] = value;
+		}
+
+		function bindEvents() {
+			GROUPS.forEach(function (g) {
+				var k = g.key;
+				PI.bindAcFieldEvents(el, k + "-", function () { return settings[k]; }, saveSettings);
+
+				el(k + "-enabled").addEventListener("change", function (e) {
+					writeSetting(k + ".enabled", e.target.checked);
+					saveSettings();
+				});
+				el(k + "-targetType").addEventListener("change", function (e) {
+					writeSetting(k + ".targetType", e.target.value);
+					updateTargetVisibility(k);
+					saveSettings();
+				});
+				el(k + "-command").addEventListener("change", function (e) {
+					writeSetting(k + ".command", e.target.value);
+					updateParamVisibility(k, true);
+					saveSettings();
+				});
+				el(k + "-parameter").addEventListener("input", function (e) {
+					writeSetting(k + ".parameter", e.target.value);
+					saveSettings();
+				});
+				el(k + "-customCommand").addEventListener("input", function (e) {
+					writeSetting(k + ".customCommand", e.target.value);
+					saveSettings();
+				});
+				el(k + "-commandType").addEventListener("change", function (e) {
+					writeSetting(k + ".commandType", e.target.value);
+					saveSettings();
+				});
+				el(k + "-deviceSelect").addEventListener("change", function (e) {
+					var opt = e.target.selectedOptions[0];
+					writeSetting(k + ".deviceId", e.target.value);
+					writeSetting(k + ".deviceName", e.target.value ? opt.textContent : "");
+					writeSetting(k + ".deviceType", e.target.value ? (opt.getAttribute("data-type") || "") : "");
+					writeSetting(k + ".command", "");
+					refreshCommandOptions(k);
+					updateParamVisibility(k, true);
+					saveSettings();
+				});
+				el(k + "-sceneSelect").addEventListener("change", function (e) {
+					var opt = e.target.selectedOptions[0];
+					writeSetting(k + ".sceneId", e.target.value);
+					writeSetting(k + ".sceneName", e.target.value ? opt.textContent : "");
+					saveSettings();
+				});
+			});
+
+			document.querySelectorAll('button[data-refresh]').forEach(function (btn) {
+				btn.addEventListener("click", function () {
+					requestList(btn.getAttribute("data-refresh"), btn);
+				});
+			});
+
+			el("g-token").addEventListener("input", function (e) {
+				globalSettings.token = e.target.value;
+				saveGlobalSettings();
+			});
+			el("g-secret").addEventListener("input", function (e) {
+				globalSettings.secret = e.target.value;
+				saveGlobalSettings();
+			});
+			el("show-credentials").addEventListener("change", function (e) {
+				var type = e.target.checked ? "text" : "password";
+				el("g-token").type = type;
+				el("g-secret").type = type;
+			});
+		}
+
+		function saveSettings() {
+			if (suppressSave || !websocket || websocket.readyState !== 1) return;
+			websocket.send(JSON.stringify({ event: "setSettings", context: piUUID, payload: settings }));
+		}
+
+		function saveGlobalSettings() {
+			if (!websocket || websocket.readyState !== 1) return;
+			websocket.send(JSON.stringify({ event: "setGlobalSettings", context: piUUID, payload: globalSettings }));
+		}
+
+		function requestList(kind, btn) {
+			if (!globalSettings.token || !globalSettings.secret) {
+				showStatus(PI.t("status.credentials_missing_input"), true);
+				return;
+			}
+			if (btn) { btn.disabled = true; btn.textContent = PI.t("button.refreshing"); }
+			showStatus("", false);
+			websocket.send(JSON.stringify({
+				action: actionInfo.action,
+				event: "sendToPlugin",
+				context: piUUID,
+				payload: { event: kind === "devices" ? "getDevices" : "getScenes" }
+			}));
+			setTimeout(function () {
+				if (btn) { btn.disabled = false; btn.textContent = PI.t("button.refresh"); }
+			}, 4000);
+		}
+
+		function showStatus(msg, isError) {
+			var box = el("global-status");
+			box.textContent = msg;
+			box.className = "status-msg" + (msg ? (isError ? " error" : " ok") : "");
+		}
+
+		function handlePluginMessage(payload) {
+			if (!payload || !payload.event) return;
+			document.querySelectorAll('button[data-refresh]').forEach(function (btn) {
+				btn.disabled = false; btn.textContent = PI.t("button.refresh");
+			});
+
+			if (payload.event === "devices") {
+				deviceList = payload.devices || [];
+				applySettingsToForm();
+				showStatus(PI.t("status.devices_updated", { count: deviceList.length }), false);
+			} else if (payload.event === "scenes") {
+				sceneList = payload.scenes || [];
+				applySettingsToForm();
+				showStatus(PI.t("status.scenes_updated", { count: sceneList.length }), false);
+			} else if (payload.event === "error") {
+				var keys = {
+					"credentials-missing": "error.credentials_missing",
+					"fetch-devices-failed": "error.fetch_devices_failed",
+					"fetch-scenes-failed": "error.fetch_scenes_failed",
+					"unexpected-error": "error.unexpected"
+				};
+				showStatus(PI.t(keys[payload.message] || "error.generic"), true);
+			}
+		}
+
+		// ---------- Stream Deck 接続 ----------
+		window.connectElgatoStreamDeckSocket = function (inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
+			piUUID = inUUID;
+			actionInfo = JSON.parse(inActionInfo);
+			settings = (actionInfo.payload && actionInfo.payload.settings) || {};
+
+			var info = JSON.parse(inInfo);
+			PI.setLanguage(info.application && info.application.language);
+			PI.applyStaticI18n();
+
+			websocket = new WebSocket("ws://127.0.0.1:" + inPort);
+
+			websocket.onopen = function () {
+				websocket.send(JSON.stringify({ event: inRegisterEvent, uuid: inUUID }));
+				websocket.send(JSON.stringify({ event: "getGlobalSettings", context: inUUID }));
+				ensureDefaults();
+				buildAllGroups();
+				applySettingsToForm();
+			};
+
+			websocket.onmessage = function (evt) {
+				var data = JSON.parse(evt.data);
+				if (data.event === "didReceiveSettings") {
+					settings = (data.payload && data.payload.settings) || {};
+					applySettingsToForm();
+				} else if (data.event === "didReceiveGlobalSettings") {
+					globalSettings = (data.payload && data.payload.settings) || {};
+					el("g-token").value = globalSettings.token || "";
+					el("g-secret").value = globalSettings.secret || "";
+
+					if (globalSettings.deviceListCache && globalSettings.deviceListCache.updatedAt > lastDeviceCacheAt) {
+						lastDeviceCacheAt = globalSettings.deviceListCache.updatedAt;
+						handlePluginMessage({ event: "devices", devices: globalSettings.deviceListCache.devices });
+					}
+					if (globalSettings.sceneListCache && globalSettings.sceneListCache.updatedAt > lastSceneCacheAt) {
+						lastSceneCacheAt = globalSettings.sceneListCache.updatedAt;
+						handlePluginMessage({ event: "scenes", scenes: globalSettings.sceneListCache.scenes });
+					}
+					if (globalSettings.listError && globalSettings.listError.updatedAt > lastErrorAt) {
+						lastErrorAt = globalSettings.listError.updatedAt;
+						handlePluginMessage({ event: "error", message: globalSettings.listError.message });
+					}
+
+					if (globalSettings.token && globalSettings.secret && deviceList.length === 0 && sceneList.length === 0) {
+						requestList("devices");
+						requestList("scenes");
+					}
+				} else if (data.event === "sendToPropertyInspector") {
+					handlePluginMessage(data.payload);
+				}
+			};
+		};
+	})();
+	</script>
+</body>
+</html>

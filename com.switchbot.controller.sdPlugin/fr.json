@@ -1,0 +1,65 @@
+{
+  "Description": "Contrôlez vos appareils, scènes, rubans lumineux et capteurs SwitchBot depuis votre Stream Deck. (Plugin non officiel, sans lien avec SwitchBot)",
+
+  "com.switchbot.controller.single": {
+    "Name": "Action simple",
+    "Tooltip": "Associe une seule commande d'appareil SwitchBot ou une scène à une touche."
+  },
+  "com.switchbot.controller.toggle": {
+    "Name": "Action bascule",
+    "Tooltip": "Enregistrez deux actions (① et ②) et alternez entre elles à chaque pression. Définissez des icônes distinctes pour ① et ② en cliquant sur l'image de la touche dans Stream Deck."
+  },
+  "com.switchbot.controller.control": {
+    "Name": "Action triple",
+    "Tooltip": "Associe des commandes d'appareils SwitchBot ou des scènes à une pression simple, double ou longue sur une touche."
+  },
+  "com.switchbot.controller.sensor": {
+    "Name": "Affichage capteur",
+    "Tooltip": "Récupère et affiche périodiquement les valeurs (température, humidité, etc.) d'un capteur SwitchBot."
+  },
+  "com.switchbot.controller.scenebrowser": {
+    "Name": "Bibliothèque de scènes",
+    "Tooltip": "Tournez pour parcourir vos scènes enregistrées, appuyez pour exécuter celle sélectionnée.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Changer de scène",
+        "Push": "Exécuter la scène sélectionnée",
+        "Touch": "Actualiser la liste des scènes"
+      }
+    }
+  },
+  "com.switchbot.controller.accontrol": {
+    "Name": "Contrôle de climatisation",
+    "Tooltip": "Contrôle la température, le mode et l'alimentation d'un climatiseur SwitchBot (télécommande infrarouge) depuis la molette d'un Stream Deck +.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Ajuster la température cible (16-30°C / 60-90°F)",
+        "Push": "Basculer l'alimentation",
+        "Touch": "Parcourir les modes activés"
+      }
+    }
+  },
+  "com.switchbot.controller.paramdial": {
+    "Name": "Contrôle de paramètre",
+    "Tooltip": "Une molette polyvalente pour ajuster n'importe quel paramètre numérique (luminosité, position de rideau, température de couleur, etc.).",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Ajuster la valeur (par pas)",
+        "Push": "Basculer l'alimentation",
+        "Touch": "Exécuter les opérations configurées dans l'ordre (appui long pour synchroniser la valeur)"
+      }
+    }
+  },
+  "com.switchbot.controller.tapelight": {
+    "Name": "Contrôle du ruban lumineux",
+    "Tooltip": "Contrôle la luminosité, l'alimentation et les scènes d'un ruban lumineux SwitchBot depuis la molette d'un Stream Deck +.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Ajuster la valeur",
+        "Push": "Basculer l'alimentation",
+        "Touch": "Faire défiler les scènes enregistrées",
+        "LongTouch": "Resynchroniser l'état actuel"
+      }
+    }
+  }
+}

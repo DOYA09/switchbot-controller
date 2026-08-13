@@ -1,0 +1,65 @@
+{
+  "Description": "透過 Stream Deck 控制 SwitchBot 裝置、情境、燈帶和感測器。(非官方外掛，與 SwitchBot 公司無關)",
+
+  "com.switchbot.controller.single": {
+    "Name": "單次動作",
+    "Tooltip": "為一個按鍵指派一個 SwitchBot 裝置操作或情境。"
+  },
+  "com.switchbot.controller.toggle": {
+    "Name": "切換動作",
+    "Tooltip": "註冊兩個操作(①和②)，每次按下按鍵時在兩者之間交替執行。可在 Stream Deck 中點擊按鍵圖片，分別設定①和②的圖示。"
+  },
+  "com.switchbot.controller.control": {
+    "Name": "三重動作",
+    "Tooltip": "將 SwitchBot 裝置操作或情境指派給單擊、雙擊和長按。"
+  },
+  "com.switchbot.controller.sensor": {
+    "Name": "感測器顯示",
+    "Tooltip": "定期取得並顯示 SwitchBot 感測器裝置的數值(溫度、濕度等)。"
+  },
+  "com.switchbot.controller.scenebrowser": {
+    "Name": "情境庫",
+    "Tooltip": "旋轉以瀏覽已儲存的情境，按下以執行目前選取的情境。",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "切換情境",
+        "Push": "執行所選情境",
+        "Touch": "重新整理情境清單"
+      }
+    }
+  },
+  "com.switchbot.controller.accontrol": {
+    "Name": "空調控制",
+    "Tooltip": "透過 Stream Deck + 旋鈕控制 SwitchBot 空調(紅外遥控)的溫度、模式和電源。",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "調整目標溫度(16-30°C / 60-90°F)",
+        "Push": "切換電源開關",
+        "Touch": "依序切換已啟用的模式"
+      }
+    }
+  },
+  "com.switchbot.controller.paramdial": {
+    "Name": "參數控制",
+    "Tooltip": "通用旋鈕，可調整任意數值參數(亮度、窗簾位置、色溫等)。",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "依步進值調整數值",
+        "Push": "切換電源開關",
+        "Touch": "依序執行已設定的操作(長按可同步數值)"
+      }
+    }
+  },
+  "com.switchbot.controller.tapelight": {
+    "Name": "燈帶控制",
+    "Tooltip": "透過 Stream Deck + 旋鈕控制 SwitchBot 燈帶的亮度、電源和情境。",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "調整數值",
+        "Push": "切換電源開關",
+        "Touch": "依序切換已儲存的情境",
+        "LongTouch": "重新同步目前狀態"
+      }
+    }
+  }
+}

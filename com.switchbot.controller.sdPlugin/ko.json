@@ -1,0 +1,65 @@
+{
+  "Description": "Stream Deck에서 SwitchBot 기기, 씬, 테이프 라이트, 센서를 제어합니다. (비공식 플러그인이며 SwitchBot과 관련이 없습니다)",
+
+  "com.switchbot.controller.single": {
+    "Name": "싱글 액션",
+    "Tooltip": "하나의 키에 SwitchBot 기기 동작이나 씬을 하나만 할당합니다."
+  },
+  "com.switchbot.controller.toggle": {
+    "Name": "토글 액션",
+    "Tooltip": "두 가지 동작(①, ②)을 등록해두고 누를 때마다 번갈아 실행합니다. Stream Deck에서 키 이미지를 클릭하면 ①, ②의 아이콘을 각각 지정할 수 있습니다."
+  },
+  "com.switchbot.controller.control": {
+    "Name": "트리플 액션",
+    "Tooltip": "SwitchBot 기기 동작이나 씬을 싱글 프레스, 더블 프레스, 길게 누르기에 각각 할당합니다."
+  },
+  "com.switchbot.controller.sensor": {
+    "Name": "센서 표시",
+    "Tooltip": "온습도계 등 SwitchBot 센서 기기의 값을 주기적으로 가져와 표시합니다."
+  },
+  "com.switchbot.controller.scenebrowser": {
+    "Name": "씬 라이브러리",
+    "Tooltip": "돌려서 저장된 씬 목록을 탐색하고, 눌러서 선택한 씬을 실행합니다.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "씬 전환",
+        "Push": "선택한 씬 실행",
+        "Touch": "씬 목록 새로고침"
+      }
+    }
+  },
+  "com.switchbot.controller.accontrol": {
+    "Name": "에어컨 컨트롤",
+    "Tooltip": "Stream Deck + 다이얼로 SwitchBot 에어컨(적외선 리모컨)의 온도, 모드, 전원을 제어합니다.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "설정 온도 조정(16-30°C / 60-90°F)",
+        "Push": "전원 켜기/끄기 전환",
+        "Touch": "활성화된 모드 순환"
+      }
+    }
+  },
+  "com.switchbot.controller.paramdial": {
+    "Name": "파라미터 컨트롤",
+    "Tooltip": "밝기, 커튼 위치, 색온도 등 임의의 숫자 파라미터를 조절할 수 있는 범용 다이얼입니다.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "값 조정(설정한 단위로)",
+        "Push": "전원 켜기/끄기 전환",
+        "Touch": "설정한 동작을 순서대로 실행(길게 누르면 값 동기화)"
+      }
+    }
+  },
+  "com.switchbot.controller.tapelight": {
+    "Name": "테이프 라이트 컨트롤",
+    "Tooltip": "Stream Deck + 다이얼로 SwitchBot 테이프 라이트의 밝기, 전원, 씬을 제어합니다.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "값 조정",
+        "Push": "전원 켜기/끄기 전환",
+        "Touch": "저장된 씬 순서대로 전환",
+        "LongTouch": "현재 상태 다시 동기화"
+      }
+    }
+  }
+}

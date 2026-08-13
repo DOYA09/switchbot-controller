@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>SwitchBot Scene Library</title>
+<script src="pi-common.js"></script>
+<style>
+	:root { color-scheme: dark; }
+	* { box-sizing: border-box; }
+	body {
+		margin: 0;
+		padding: 8px 12px 24px;
+		font-family: -apple-system, "Segoe UI", sans-serif;
+		font-size: 12px;
+		background: #2d2d2d;
+		color: #d8d8d8;
+	}
+	.hint {
+		font-size: 10.5px;
+		opacity: 0.65;
+		margin: 2px 2px 10px 2px;
+		line-height: 1.5;
+	}
+	.section-title {
+		font-weight: 600;
+		font-size: 12px;
+		letter-spacing: 0.02em;
+		color: #9fe6da;
+		margin: 18px 0 6px 2px;
+	}
+	.field {
+		display: flex;
+		align-items: center;
+		min-height: 30px;
+		padding: 3px 0;
+		border-bottom: 1px solid #3c3c3c;
+	}
+	.field > label {
+		flex: 0 0 170px;
+		color: #a6a6a6;
+		font-size: 11px;
+	}
+	.field > .control {
+		flex: 1;
+		display: flex;
+		gap: 6px;
+		align-items: center;
+	}
+	input[type="text"], input[type="password"], input[type="number"] {
+		flex: 1;
+		background: #1e1e1e;
+		border: 1px solid #444;
+		color: #e6e6e6;
+		border-radius: 4px;
+		padding: 5px 6px;
+		font-size: 11.5px;
+		min-width: 0;
+	}
+	input:focus { outline: 1px solid #36c7b0; }
+	button {
+		background: #3a3a3a;
+		border: 1px solid #4c4c4c;
+		color: #d8d8d8;
+		border-radius: 4px;
+		padding: 5px 10px;
+		font-size: 11px;
+		cursor: pointer;
+		white-space: nowrap;
+	}
+	button:hover { background: #454545; }
+	button:disabled { opacity: 0.5; cursor: default; }
+	.checkbox-row { display: flex; align-items: center; gap: 6px; }
+	.checkbox-row input { width: auto; flex: none; }
+	.status-msg { font-size: 10.5px; margin: 2px 2px 8px; min-height: 14px; }
+	.status-msg.error { color: #ff8a8a; }
+	.status-msg.ok { color: #8adfc4; }
+
+	.scene-master-row {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		padding: 6px 0;
+		border-bottom: 1px solid #3c3c3c;
+		font-weight: 600;
+	}
+	.scene-master-row input { width: auto; }
+	.scene-list { margin-top: 4px; }
+	.scene-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 5px 0;
+		border-bottom: 1px solid #3c3c3c;
+	}
+	.scene-row.drag-over {
+		background: #383838;
+		border-top: 3px solid #36c7b0;
+		/* 上のシーンとの境界線を強調し、ドロップ時にどの位置へ挿入されるかを分かりやすくする */
+	}
+	.scene-row input[type="checkbox"] { width: auto; flex: none; }
+	.scene-row .scene-name {
+		flex: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 11.5px;
+	}
+	.scene-row .drag-handle {
+		flex: none;
+		cursor: grab;
+		padding: 2px 8px;
+		color: #888;
+		font-size: 14px;
+		user-select: none;
+		letter-spacing: -1px;
+	}
+	.scene-row .drag-handle:active { cursor: grabbing; }
+	.scene-empty { font-size: 11px; opacity: 0.6; padding: 8px 2px; }
+</style>
+</head>
+<body>
+
+	<!-- ===== SwitchBot API 共通設定（全キーで共有） ===== -->
+	<div class="field">
+		<label data-i18n="label.token">トークン</label>
+		<div class="control"><input type="password" id="g-token" autocomplete="off" /></div>
+	</div>
+	<div class="field">
+		<label data-i18n="label.secret">クライアントシークレット</label>
+		<div class="control"><input type="password" id="g-secret" autocomplete="off" /></div>
+	</div>
+	<div class="field">
+		<label></label>
+		<div class="control checkbox-row">
+			<input type="checkbox" id="show-credentials" />
+			<label for="show-credentials" data-i18n="label.show_credentials">入力内容を表示</label>
+		</div>
+	</div>
+	<div class="hint" data-i18n="hint.credentials">トークン / クライアントシークレットは他のSwitchBotアクションと共有されます。SwitchBotアプリの「プロフィール」→「設定」→バージョン表示を連続タップすると表示される「開発者向けオプション」から取得できます。</div>
+
+	<div class="field">
+		<label data-i18n="scenebrowser.manual_refresh">手動更新</label>
+		<div class="control">
+			<button type="button" id="manual-refresh" data-i18n="button.refresh">更新</button>
+		</div>
+	</div>
+	<div class="field">
+		<label data-i18n="scenebrowser.auto_refresh_enabled">自動更新を有効にする</label>
+		<div class="control checkbox-row">
+			<input type="checkbox" id="autoRefreshEnabled" />
+		</div>
+	</div>
+	<div class="field" id="refresh-interval-field">
+		<label data-i18n="scenebrowser.refresh_interval">自動更新の間隔(分)</label>
+		<div class="control"><input type="number" id="refreshIntervalMin" min="5" max="180" /></div>
+	</div>
+	<div class="field">
+		<label data-i18n="scenebrowser.font_size">シーン名の文字サイズ(px)</label>
+		<div class="control"><input type="number" id="fontSize" min="10" max="32" /></div>
+	</div>
+
+	<div class="section-title" id="scene-heading">登録済みのシーン一覧</div>
+	<div class="scene-master-row">
+		<input type="checkbox" id="show-all" />
+		<label for="show-all" data-i18n="scenebrowser.show_all">全て表示</label>
+	</div>
+	<div class="scene-list" id="scene-list"></div>
+	<div class="hint" data-i18n="scenebrowser.hint">
+		ダイヤルを回すと登録済みシーンを1件ずつ切り替えて表示し、押し込むと表示中のシーンを実行します。
+		タッチスクリーンをタップするとシーン一覧をその場で再取得します(SwitchBotアプリでシーンを追加/削除した直後などにご利用ください)。自動更新の間隔は、それ以外のタイミングでバックグラウンドで一覧を最新化する頻度です。
+	</div>
+
+	<div id="global-status" class="status-msg"></div>
+
+	<script>
+	(function () {
+		"use strict";
+
+		var PI = window.SwitchBotPI;
+		var websocket = null;
+		var piUUID = null;
+		var actionInfo = null;
+		var settings = {};
+		var globalSettings = {};
+		var suppressSave = false;
+		var dragSrcIndex = null;
+
+		function el(id) { return document.getElementById(id); }
+
+		function ensureDefaults() {
+			if (settings.currentIndex === undefined) settings.currentIndex = 0;
+			if (settings.refreshIntervalMin === undefined) settings.refreshIntervalMin = 30;
+			if (settings.autoRefreshEnabled === undefined) settings.autoRefreshEnabled = false;
+			if (!Array.isArray(settings.sceneOrder)) settings.sceneOrder = [];
+			if (settings.fontSize === undefined) settings.fontSize = 24;
+		}
+
+		function applySettingsToForm() {
+			ensureDefaults();
+			suppressSave = true;
+
+			el("autoRefreshEnabled").checked = !!settings.autoRefreshEnabled;
+			el("refreshIntervalMin").value = settings.refreshIntervalMin;
+			el("fontSize").value = settings.fontSize;
+			updateRefreshIntervalVisibility();
+
+			renderSceneList();
+
+			suppressSave = false;
+		}
+
+		function updateRefreshIntervalVisibility() {
+			el("refresh-interval-field").style.display = settings.autoRefreshEnabled ? "" : "none";
+		}
+
+		function renderSceneList() {
+			var listEl = el("scene-list");
+			var order = settings.sceneOrder || [];
+
+			el("scene-heading").textContent = PI.t("scenebrowser.all_scenes_heading", { count: order.length });
+
+			if (order.length === 0) {
+				listEl.innerHTML = '<div class="scene-empty">' + PI.escapeHtml(PI.t("scenebrowser.no_scenes")) + "</div>";
+				el("show-all").checked = false;
+				el("show-all").indeterminate = false;
+				return;
+			}
+
+			var html = "";
+			order.forEach(function (entry, index) {
+				html +=
+					'<div class="scene-row" data-index="' + index + '" draggable="false">' +
+						'<input type="checkbox" class="scene-visible" data-index="' + index + '"' + (entry.visible ? " checked" : "") + " />" +
+						'<span class="scene-name">' + PI.escapeHtml(entry.sceneName) + "</span>" +
+						'<span class="drag-handle" draggable="true" data-index="' + index + '" title="' + PI.escapeHtml(PI.t("scenebrowser.move_up") + " / " + PI.t("scenebrowser.move_down")) + '">&#9776;</span>' +
+					"</div>";
+			});
+			listEl.innerHTML = html;
+
+			var allVisible = order.every(function (e) { return e.visible; });
+			el("show-all").indeterminate = false;
+			el("show-all").checked = allVisible;
+
+			listEl.querySelectorAll(".scene-visible").forEach(function (checkbox) {
+				checkbox.addEventListener("change", function (e) {
+					var idx = Number(e.target.getAttribute("data-index"));
+					settings.sceneOrder[idx].visible = e.target.checked;
+					// いずれか1つでも非表示になったら「全て表示」も自動でOFFにする(全てONに戻れば自動でON)
+					el("show-all").checked = settings.sceneOrder.every(function (entry) { return entry.visible; });
+					saveSettings();
+				});
+			});
+
+			attachDragEvents(listEl);
+		}
+
+		function attachDragEvents(listEl) {
+			listEl.querySelectorAll(".drag-handle").forEach(function (handle) {
+				handle.addEventListener("dragstart", function (e) {
+					dragSrcIndex = Number(e.target.getAttribute("data-index"));
+					e.dataTransfer.effectAllowed = "move";
+					try { e.dataTransfer.setData("text/plain", String(dragSrcIndex)); } catch (err) { /* 一部環境向けの保険 */ }
+				});
+				handle.addEventListener("dragend", function () {
+					dragSrcIndex = null;
+					listEl.querySelectorAll(".scene-row").forEach(function (row) { row.classList.remove("drag-over"); });
+				});
+			});
+
+			listEl.querySelectorAll(".scene-row").forEach(function (row) {
+				row.addEventListener("dragover", function (e) {
+					if (dragSrcIndex === null) return;
+					e.preventDefault();
+					e.dataTransfer.dropEffect = "move";
+					row.classList.add("drag-over");
+				});
+				row.addEventListener("dragleave", function () {
+					row.classList.remove("drag-over");
+				});
+				row.addEventListener("drop", function (e) {
+					e.preventDefault();
+					row.classList.remove("drag-over");
+					if (dragSrcIndex === null) return;
+					var targetIndex = Number(row.getAttribute("data-index"));
+					if (targetIndex === dragSrcIndex) return;
+
+					var arr = settings.sceneOrder;
+					var moved = arr.splice(dragSrcIndex, 1)[0];
+					arr.splice(targetIndex, 0, moved);
+					dragSrcIndex = null;
+
+					renderSceneList();
+					saveSettings();
+				});
+			});
+		}
+
+		function bindEvents() {
+			el("autoRefreshEnabled").addEventListener("change", function (e) {
+				settings.autoRefreshEnabled = e.target.checked;
+				updateRefreshIntervalVisibility();
+				saveSettings();
+			});
+			el("refreshIntervalMin").addEventListener("input", function (e) {
+				settings.refreshIntervalMin = Number(e.target.value) || 30;
+				saveSettings();
+			});
+			el("fontSize").addEventListener("input", function (e) {
+				var v = Number(e.target.value);
+				if (!v) return;
+				settings.fontSize = Math.min(32, Math.max(10, v));
+				saveSettings();
+			});
+			el("manual-refresh").addEventListener("click", function () {
+				requestRefresh(el("manual-refresh"));
+			});
+			el("show-all").addEventListener("change", function (e) {
+				var checked = e.target.checked;
+				(settings.sceneOrder || []).forEach(function (entry) {
+					entry.visible = checked;
+				});
+				renderSceneList();
+				saveSettings();
+			});
+			el("g-token").addEventListener("input", function (e) {
+				globalSettings.token = e.target.value;
+				saveGlobalSettings();
+			});
+			el("g-secret").addEventListener("input", function (e) {
+				globalSettings.secret = e.target.value;
+				saveGlobalSettings();
+			});
+			el("show-credentials").addEventListener("change", function (e) {
+				var type = e.target.checked ? "text" : "password";
+				el("g-token").type = type;
+				el("g-secret").type = type;
+			});
+		}
+
+		function saveSettings() {
+			if (suppressSave || !websocket || websocket.readyState !== 1) return;
+			websocket.send(JSON.stringify({ event: "setSettings", context: piUUID, payload: settings }));
+		}
+
+		function saveGlobalSettings() {
+			if (!websocket || websocket.readyState !== 1) return;
+			websocket.send(JSON.stringify({ event: "setGlobalSettings", context: piUUID, payload: globalSettings }));
+		}
+
+		function requestRefresh(btn) {
+			if (!websocket || websocket.readyState !== 1) return;
+			if (!globalSettings.token || !globalSettings.secret) {
+				showStatus(PI.t("status.credentials_missing_input"), true);
+				return;
+			}
+			if (btn) { btn.disabled = true; btn.textContent = PI.t("button.refreshing"); }
+			showStatus("", false);
+			websocket.send(JSON.stringify({
+				action: actionInfo.action,
+				event: "sendToPlugin",
+				context: piUUID,
+				payload: { event: "refresh" }
+			}));
+			setTimeout(function () {
+				if (btn) { btn.disabled = false; btn.textContent = PI.t("button.refresh"); }
+			}, 4000);
+		}
+
+		function showStatus(msg, isError) {
+			var box = el("global-status");
+			box.textContent = msg;
+			box.className = "status-msg" + (msg ? (isError ? " error" : " ok") : "");
+		}
+
+		window.connectElgatoStreamDeckSocket = function (inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
+			piUUID = inUUID;
+			actionInfo = JSON.parse(inActionInfo);
+			settings = (actionInfo.payload && actionInfo.payload.settings) || {};
+
+			var info = JSON.parse(inInfo);
+			PI.setLanguage(info.application && info.application.language);
+			PI.applyStaticI18n();
+
+			websocket = new WebSocket("ws://127.0.0.1:" + inPort);
+
+			websocket.onopen = function () {
+				websocket.send(JSON.stringify({ event: inRegisterEvent, uuid: inUUID }));
+				websocket.send(JSON.stringify({ event: "getGlobalSettings", context: inUUID }));
+				bindEvents();
+				applySettingsToForm();
+			};
+
+			websocket.onmessage = function (evt) {
+				var data = JSON.parse(evt.data);
+				if (data.event === "didReceiveSettings") {
+					settings = (data.payload && data.payload.settings) || {};
+					applySettingsToForm();
+					var btn = el("manual-refresh");
+					if (btn) { btn.disabled = false; btn.textContent = PI.t("button.refresh"); }
+				} else if (data.event === "didReceiveGlobalSettings") {
+					globalSettings = (data.payload && data.payload.settings) || {};
+					el("g-token").value = globalSettings.token || "";
+					el("g-secret").value = globalSettings.secret || "";
+				}
+			};
+		};
+	})();
+	</script>
+</body>
+</html>

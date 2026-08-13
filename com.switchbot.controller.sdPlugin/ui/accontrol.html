@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>SwitchBot AC Control</title>
+<script src="pi-common.js"></script>
+<style>
+	:root { color-scheme: dark; }
+	* { box-sizing: border-box; }
+	body {
+		margin: 0;
+		padding: 8px 12px 24px;
+		font-family: -apple-system, "Segoe UI", sans-serif;
+		font-size: 12px;
+		background: #2d2d2d;
+		color: #d8d8d8;
+	}
+	.hint {
+		font-size: 10.5px;
+		opacity: 0.65;
+		margin: 2px 2px 10px 2px;
+		line-height: 1.5;
+	}
+	.section-title {
+		font-weight: 600;
+		font-size: 12px;
+		letter-spacing: 0.02em;
+		color: #9fe6da;
+		margin: 18px 0 6px 2px;
+	}
+	.field {
+		display: flex;
+		align-items: center;
+		min-height: 30px;
+		padding: 3px 0;
+		border-bottom: 1px solid #3c3c3c;
+	}
+	.field > label {
+		flex: 0 0 170px;
+		color: #a6a6a6;
+		font-size: 11px;
+	}
+	.field > .control {
+		flex: 1;
+		display: flex;
+		gap: 6px;
+		align-items: center;
+	}
+	input[type="text"], input[type="password"], input[type="number"], select {
+		flex: 1;
+		background: #1e1e1e;
+		border: 1px solid #444;
+		color: #e6e6e6;
+		border-radius: 4px;
+		padding: 5px 6px;
+		font-size: 11.5px;
+		min-width: 0;
+	}
+	input:focus, select:focus { outline: 1px solid #36c7b0; }
+	button {
+		background: #3a3a3a;
+		border: 1px solid #4c4c4c;
+		color: #d8d8d8;
+		border-radius: 4px;
+		padding: 5px 10px;
+		font-size: 11px;
+		cursor: pointer;
+		white-space: nowrap;
+	}
+	button:hover { background: #454545; }
+	button:disabled { opacity: 0.5; cursor: default; }
+	.checkbox-row { display: flex; align-items: center; gap: 6px; }
+	.checkbox-row input { width: auto; flex: none; }
+	.mode-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 6px 0;
+		border-bottom: 1px solid #3c3c3c;
+	}
+	.mode-row input { width: auto; flex: none; }
+	.mode-row label { flex: 1; font-size: 11.5px; }
+	.status-msg { font-size: 10.5px; margin: 2px 2px 8px; min-height: 14px; }
+	.status-msg.error { color: #ff8a8a; }
+	.status-msg.ok { color: #8adfc4; }
+</style>
+</head>
+<body>
+
+	<!-- ===== SwitchBot API 共通設定（全キーで共有） ===== -->
+	<div class="field">
+		<label data-i18n="label.token">トークン</label>
+		<div class="control"><input type="password" id="g-token" autocomplete="off" /></div>
+	</div>
+	<div class="field">
+		<label data-i18n="label.secret">クライアントシークレット</label>
+		<div class="control"><input type="password" id="g-secret" autocomplete="off" /></div>
+	</div>
+	<div class="field">
+		<label></label>
+		<div class="control checkbox-row">
+			<input type="checkbox" id="show-credentials" />
+			<label for="show-credentials" data-i18n="label.show_credentials">入力内容を表示</label>
+		</div>
+	</div>
+	<div class="hint" data-i18n="hint.credentials">SwitchBotアプリの「プロフィール」→「設定」→バージョン表示を連続タップすると表示される「開発者向けオプション」から取得できます。</div>
+
+	<div class="field">
+		<label data-i18n="label.device">デバイス</label>
+		<div class="control">
+			<select id="deviceSelect"></select>
+			<button type="button" id="device-refresh" data-i18n="button.refresh">更新</button>
+		</div>
+	</div>
+	<div class="field">
+		<label data-i18n="accontrol.unit_label">表示単位</label>
+		<div class="control">
+			<select id="unit">
+				<option value="C" data-i18n="accontrol.unit.c">摂氏(℃)</option>
+				<option value="F" data-i18n="accontrol.unit.f">華氏(℉)</option>
+			</select>
+		</div>
+	</div>
+	<div class="field">
+		<label data-i18n="accontrol.cool_default">冷房のデフォルト温度</label>
+		<div class="control"><input type="number" id="coolDefaultTemp" /></div>
+	</div>
+	<div class="field">
+		<label data-i18n="accontrol.heat_default">暖房のデフォルト温度</label>
+		<div class="control"><input type="number" id="heatDefaultTemp" /></div>
+	</div>
+
+	<div class="section-title" data-i18n="accontrol.modes_heading">タッチで切り替えるモード</div>
+	<div class="mode-row">
+		<input type="checkbox" id="modeCoolEnabled" />
+		<label for="modeCoolEnabled" data-i18n="accontrol.mode.cool">冷房</label>
+	</div>
+	<div class="mode-row">
+		<input type="checkbox" id="modeHeatEnabled" />
+		<label for="modeHeatEnabled" data-i18n="accontrol.mode.heat">暖房</label>
+	</div>
+	<div class="mode-row">
+		<input type="checkbox" id="modeDryEnabled" />
+		<label for="modeDryEnabled" data-i18n="accontrol.mode.dry">除湿</label>
+	</div>
+	<div class="mode-row">
+		<input type="checkbox" id="modeFanEnabled" />
+		<label for="modeFanEnabled" data-i18n="accontrol.mode.fan">送風</label>
+	</div>
+
+	<div class="hint" data-i18n="accontrol.hint" style="margin-top:10px">ダイヤルを回すと設定温度を調整します(範囲は摂氏16〜30℃/華氏60〜90℉で固定)。押し込むと電源のオン/オフを切り替えます。タッチスクリーンをタップするたびに、上で有効にしたモードを順番に切り替えます(冷房/暖房に切り替えた際は、それぞれのデフォルト温度が使用されます)。</div>
+	<div class="hint" id="no-mode-hint" data-i18n="accontrol.no_mode_hint" style="display:none;color:#ff8a8a">少なくとも1つのモードを有効にしてください。</div>
+
+	<div id="global-status" class="status-msg"></div>
+
+	<script>
+	(function () {
+		"use strict";
+
+		var PI = window.SwitchBotPI;
+		var websocket = null;
+		var piUUID = null;
+		var actionInfo = null;
+		var settings = {};
+		var globalSettings = {};
+		var deviceList = [];
+		var suppressSave = false;
+		var lastDeviceCacheAt = 0;
+		var lastErrorAt = 0;
+
+		function el(id) { return document.getElementById(id); }
+
+		function ensureDefaults() {
+			if (settings.deviceId === undefined) settings.deviceId = "";
+			if (settings.deviceName === undefined) settings.deviceName = "";
+			if (settings.deviceType === undefined) settings.deviceType = "";
+			if (settings.unit === undefined) settings.unit = "C";
+			if (settings.value === undefined) settings.value = 26;
+			if (settings.mode === undefined) settings.mode = 2;
+			if (settings.coolDefaultTemp === undefined) settings.coolDefaultTemp = 26;
+			if (settings.heatDefaultTemp === undefined) settings.heatDefaultTemp = 22;
+			if (settings.modeCoolEnabled === undefined) settings.modeCoolEnabled = true;
+			if (settings.modeHeatEnabled === undefined) settings.modeHeatEnabled = true;
+			if (settings.modeDryEnabled === undefined) settings.modeDryEnabled = false;
+			if (settings.modeFanEnabled === undefined) settings.modeFanEnabled = false;
+		}
+
+		function applySettingsToForm() {
+			ensureDefaults();
+			suppressSave = true;
+
+			PI.populateSelect(el("deviceSelect"), PI.filterDevicesForDial(deviceList, "accontrol"), "deviceId", "deviceName", settings.deviceId, settings.deviceName, "deviceType");
+			el("unit").value = settings.unit;
+			el("coolDefaultTemp").value = settings.coolDefaultTemp;
+			el("heatDefaultTemp").value = settings.heatDefaultTemp;
+			el("modeCoolEnabled").checked = !!settings.modeCoolEnabled;
+			el("modeHeatEnabled").checked = !!settings.modeHeatEnabled;
+			el("modeDryEnabled").checked = !!settings.modeDryEnabled;
+			el("modeFanEnabled").checked = !!settings.modeFanEnabled;
+			updateRangeInputsForUnit();
+			updateNoModeHint();
+
+			suppressSave = false;
+		}
+
+		function updateRangeInputsForUnit() {
+			var isF = settings.unit === "F";
+			var min = isF ? 60 : 16;
+			var max = isF ? 90 : 30;
+			el("coolDefaultTemp").min = min;
+			el("coolDefaultTemp").max = max;
+			el("heatDefaultTemp").min = min;
+			el("heatDefaultTemp").max = max;
+		}
+
+		function updateNoModeHint() {
+			var anyEnabled = settings.modeCoolEnabled || settings.modeHeatEnabled || settings.modeDryEnabled || settings.modeFanEnabled;
+			el("no-mode-hint").style.display = anyEnabled ? "none" : "";
+		}
+
+		function bindEvents() {
+			el("deviceSelect").addEventListener("change", function (e) {
+				var opt = e.target.selectedOptions[0];
+				settings.deviceId = e.target.value;
+				settings.deviceName = e.target.value ? opt.textContent : "";
+				settings.deviceType = e.target.value ? (opt.getAttribute("data-type") || "") : "";
+				saveSettings();
+			});
+			el("device-refresh").addEventListener("click", function () {
+				requestDevices(el("device-refresh"));
+			});
+			el("unit").addEventListener("change", function (e) {
+				settings.unit = e.target.value;
+				if (settings.unit === "F") {
+					settings.coolDefaultTemp = 78;
+					settings.heatDefaultTemp = 78;
+				} else {
+					settings.coolDefaultTemp = 26;
+					settings.heatDefaultTemp = 22;
+				}
+				el("coolDefaultTemp").value = settings.coolDefaultTemp;
+				el("heatDefaultTemp").value = settings.heatDefaultTemp;
+				updateRangeInputsForUnit();
+				saveSettings();
+			});
+			el("coolDefaultTemp").addEventListener("input", function (e) {
+				settings.coolDefaultTemp = Number(e.target.value) || 26;
+				saveSettings();
+			});
+			el("heatDefaultTemp").addEventListener("input", function (e) {
+				settings.heatDefaultTemp = Number(e.target.value) || 22;
+				saveSettings();
+			});
+			["modeCoolEnabled", "modeHeatEnabled", "modeDryEnabled", "modeFanEnabled"].forEach(function (id) {
+				el(id).addEventListener("change", function (e) {
+					settings[id] = e.target.checked;
+					updateNoModeHint();
+					saveSettings();
+				});
+			});
+			el("g-token").addEventListener("input", function (e) {
+				globalSettings.token = e.target.value;
+				saveGlobalSettings();
+			});
+			el("g-secret").addEventListener("input", function (e) {
+				globalSettings.secret = e.target.value;
+				saveGlobalSettings();
+			});
+			el("show-credentials").addEventListener("change", function (e) {
+				var type = e.target.checked ? "text" : "password";
+				el("g-token").type = type;
+				el("g-secret").type = type;
+			});
+		}
+
+		function saveSettings() {
+			if (suppressSave || !websocket || websocket.readyState !== 1) return;
+			websocket.send(JSON.stringify({ event: "setSettings", context: piUUID, payload: settings }));
+		}
+
+		function saveGlobalSettings() {
+			if (!websocket || websocket.readyState !== 1) return;
+			websocket.send(JSON.stringify({ event: "setGlobalSettings", context: piUUID, payload: globalSettings }));
+		}
+
+		function requestDevices(btn) {
+			if (!websocket || websocket.readyState !== 1) return;
+			if (!globalSettings.token || !globalSettings.secret) {
+				showStatus(PI.t("status.credentials_missing_input"), true);
+				return;
+			}
+			if (btn) { btn.disabled = true; btn.textContent = PI.t("button.refreshing"); }
+			showStatus("", false);
+			websocket.send(JSON.stringify({
+				action: actionInfo.action,
+				event: "sendToPlugin",
+				context: piUUID,
+				payload: { event: "getDevices" }
+			}));
+			setTimeout(function () {
+				if (btn) { btn.disabled = false; btn.textContent = PI.t("button.refresh"); }
+			}, 4000);
+		}
+
+		function showStatus(msg, isError) {
+			var box = el("global-status");
+			box.textContent = msg;
+			box.className = "status-msg" + (msg ? (isError ? " error" : " ok") : "");
+		}
+
+		function handlePluginMessage(payload) {
+			if (!payload || !payload.event) return;
+			var btn = el("device-refresh");
+			if (btn) { btn.disabled = false; btn.textContent = PI.t("button.refresh"); }
+
+			if (payload.event === "devices") {
+				deviceList = payload.devices || [];
+				applySettingsToForm();
+				showStatus(PI.t("status.devices_updated", { count: deviceList.length }), false);
+			} else if (payload.event === "error") {
+				var keys = {
+					"credentials-missing": "error.credentials_missing",
+					"fetch-devices-failed": "error.fetch_devices_failed",
+					"unexpected-error": "error.unexpected"
+				};
+				showStatus(PI.t(keys[payload.message] || "error.generic"), true);
+			}
+		}
+
+		window.connectElgatoStreamDeckSocket = function (inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
+			piUUID = inUUID;
+			actionInfo = JSON.parse(inActionInfo);
+			settings = (actionInfo.payload && actionInfo.payload.settings) || {};
+
+			var info = JSON.parse(inInfo);
+			PI.setLanguage(info.application && info.application.language);
+			PI.applyStaticI18n();
+
+			websocket = new WebSocket("ws://127.0.0.1:" + inPort);
+
+			websocket.onopen = function () {
+				websocket.send(JSON.stringify({ event: inRegisterEvent, uuid: inUUID }));
+				websocket.send(JSON.stringify({ event: "getGlobalSettings", context: inUUID }));
+				bindEvents();
+				applySettingsToForm();
+			};
+
+			websocket.onmessage = function (evt) {
+				var data = JSON.parse(evt.data);
+				if (data.event === "didReceiveSettings") {
+					settings = (data.payload && data.payload.settings) || {};
+					applySettingsToForm();
+				} else if (data.event === "didReceiveGlobalSettings") {
+					globalSettings = (data.payload && data.payload.settings) || {};
+					el("g-token").value = globalSettings.token || "";
+					el("g-secret").value = globalSettings.secret || "";
+
+					if (globalSettings.deviceListCache && globalSettings.deviceListCache.updatedAt > lastDeviceCacheAt) {
+						lastDeviceCacheAt = globalSettings.deviceListCache.updatedAt;
+						handlePluginMessage({ event: "devices", devices: globalSettings.deviceListCache.devices });
+					}
+					if (globalSettings.listError && globalSettings.listError.updatedAt > lastErrorAt) {
+						lastErrorAt = globalSettings.listError.updatedAt;
+						handlePluginMessage({ event: "error", message: globalSettings.listError.message });
+					}
+
+					if (globalSettings.token && globalSettings.secret && deviceList.length === 0) {
+						requestDevices();
+					}
+				} else if (data.event === "sendToPropertyInspector") {
+					handlePluginMessage(data.payload);
+				}
+			};
+		};
+	})();
+	</script>
+</body>
+</html>

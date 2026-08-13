@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<title>SwitchBot Strip Light Control</title>
+<script src="pi-common.js"></script>
+<style>
+	:root { color-scheme: dark; }
+	* { box-sizing: border-box; }
+	body {
+		margin: 0;
+		padding: 8px 12px 20px;
+		font-family: -apple-system, "Segoe UI", sans-serif;
+		font-size: 12px;
+		background: #2d2d2d;
+		color: #d8d8d8;
+	}
+	.section-title {
+		font-weight: 600;
+		font-size: 12px;
+		letter-spacing: 0.02em;
+		color: #9fe6da;
+		margin: 20px 0 6px 2px;
+	}
+	.hint {
+		font-size: 10.5px;
+		opacity: 0.65;
+		margin: 2px 2px 10px 2px;
+		line-height: 1.5;
+	}
+	.field {
+		display: flex;
+		align-items: center;
+		min-height: 30px;
+		padding: 3px 0;
+		border-bottom: 1px solid #3c3c3c;
+	}
+	.field > label {
+		flex: 0 0 150px;
+		color: #a6a6a6;
+		font-size: 11px;
+	}
+	.field > .control {
+		flex: 1;
+		display: flex;
+		gap: 6px;
+		align-items: center;
+	}
+	input[type="text"], input[type="password"], input[type="number"], select {
+		flex: 1;
+		background: #1e1e1e;
+		border: 1px solid #444;
+		color: #e6e6e6;
+		border-radius: 4px;
+		padding: 5px 6px;
+		font-size: 11.5px;
+		min-width: 0;
+	}
+	input:focus, select:focus { outline: 1px solid #36c7b0; }
+	.checkbox-row { display: flex; align-items: center; gap: 6px; }
+	.checkbox-row input { width: auto; flex: none; }
+	button {
+		background: #3a3a3a;
+		border: 1px solid #4c4c4c;
+		color: #d8d8d8;
+		border-radius: 4px;
+		padding: 5px 10px;
+		font-size: 11px;
+		cursor: pointer;
+		white-space: nowrap;
+	}
+	button:hover { background: #454545; }
+	button:disabled { opacity: 0.5; cursor: default; }
+	.status-msg { font-size: 10.5px; margin: 2px 2px 8px; min-height: 14px; }
+	.status-msg.error { color: #ff8a8a; }
+	.status-msg.ok { color: #8adfc4; }
+</style>
+</head>
+<body>
+
+	<!-- ===== SwitchBot API 共通設定（全キーで共有） ===== -->
+	<div class="field">
+		<label data-i18n="label.token">トークン</label>
+		<div class="control"><input type="password" id="g-token" autocomplete="off" /></div>
+	</div>
+	<div class="field">
+		<label data-i18n="label.secret">クライアントシークレット</label>
+		<div class="control"><input type="password" id="g-secret" autocomplete="off" /></div>
+	</div>
+	<div class="field">
+		<label></label>
+		<div class="control checkbox-row">
+			<input type="checkbox" id="show-credentials" />
+			<label for="show-credentials" data-i18n="label.show_credentials">入力内容を表示</label>
+		</div>
+	</div>
+	<div class="hint" data-i18n="hint.credentials">トークン / クライアントシークレットは他のSwitchBotアクションと共有されます。SwitchBotアプリの「プロフィール」→「設定」→バージョン表示を連続タップすると表示される「開発者向けオプション」から取得できます。</div>
+
+	<div class="section-title" data-i18n="tapelight.device_section">デバイス設定</div>
+	<div class="field">
+		<label data-i18n="label.device">デバイス</label>
+		<div class="control">
+			<select id="deviceSelect"></select>
+			<button type="button" id="device-refresh" data-i18n="button.refresh">更新</button>
+		</div>
+	</div>
+	<div class="field">
+		<label data-i18n="tapelight.parameter_target">パラメーター</label>
+		<div class="control">
+			<select id="parameterTarget"></select>
+		</div>
+	</div>
+	<div class="field" id="custom-command-field" style="display:none">
+		<label data-i18n="label.custom_command_name">コマンド名</label>
+		<div class="control"><input type="text" id="customCommand" data-i18n-placeholder="placeholder.custom_command" placeholder="例: setMode" /></div>
+	</div>
+	<div class="field" id="command-type-field" style="display:none">
+		<label data-i18n="label.command_type">コマンド種別</label>
+		<div class="control">
+			<select id="commandType">
+				<option value="command">command</option>
+				<option value="customize">customize</option>
+			</select>
+		</div>
+	</div>
+	<div class="field">
+		<label data-i18n="tapelight.poll_interval">自動同期の間隔(秒)</label>
+		<div class="control"><input type="number" id="pollIntervalSec" min="5" max="300" /></div>
+	</div>
+	<div class="hint" data-i18n="tapelight.device_hint">ダイヤルを回すと明るさ、押し込むと電源オン/オフを操作します。自動同期は、スマホアプリなど他経路での操作をキーの表示に反映するための定期取得です。</div>
+	<div class="hint" id="color-hint" data-i18n="tapelight.color_hint" style="display:none">ダイヤルを回すと8色(赤→オレンジ→黄→黄緑→緑→水色→青→紫→赤)を順番に切り替えます。</div>
+
+	<div class="section-title" data-i18n="tapelight.scene_section">タッチ操作で切り替えるシーン</div>
+	<div class="field">
+		<label data-i18n="tapelight.scene1">シーン1</label>
+		<div class="control">
+			<select id="scene1Select"></select>
+			<button type="button" id="scene-refresh" data-i18n="button.refresh">更新</button>
+		</div>
+	</div>
+	<div class="field">
+		<label data-i18n="tapelight.scene2">シーン2</label>
+		<div class="control"><select id="scene2Select"></select></div>
+	</div>
+	<div class="field">
+		<label data-i18n="tapelight.scene3">シーン3</label>
+		<div class="control"><select id="scene3Select"></select></div>
+	</div>
+	<div class="hint" data-i18n="tapelight.scene_hint">タッチスクリーンを短くタップすると、シーン1→2→3→1…の順に実行されます(未選択のスロットはスキップ)。長押しすると実機の状態を再取得します。</div>
+
+	<div id="global-status" class="status-msg"></div>
+
+	<script>
+	(function () {
+		"use strict";
+
+		var websocket = null;
+		var piUUID = null;
+		var actionInfo = null;
+		var settings = {};
+		var globalSettings = {};
+		var sceneList = [];
+		var deviceList = [];
+		var suppressSave = false;
+		var lastDeviceCacheAt = 0;
+		var lastSceneCacheAt = 0;
+		var lastErrorAt = 0;
+
+		var PI = window.SwitchBotPI;
+
+		var PARAMETER_PRESETS = [
+			{ value: "", labelKey: "option.unselected", requiredCommand: null },
+			{ value: "brightness", labelKey: "paramdial.opt.brightness", requiredCommand: "setBrightness" },
+			{ value: "colorTemperature", labelKey: "paramdial.opt.colortemp", requiredCommand: "setColorTemperature" },
+			{ value: "color", labelKey: "tapelight.opt.color", requiredCommand: "setColor" },
+			{ value: "custom", labelKey: "paramdial.opt.custom", requiredCommand: null }
+		];
+
+		function el(id) { return document.getElementById(id); }
+
+		function escapeHtml(str) {
+			return PI.escapeHtml(str);
+		}
+
+		function applySettingsToForm() {
+			suppressSave = true;
+
+			populateDeviceSelect(el("deviceSelect"), settings.deviceId, settings.deviceName);
+
+			if (settings.parameterTarget === undefined) settings.parameterTarget = "";
+			if (settings.value === undefined && settings.brightness !== undefined) settings.value = settings.brightness;
+
+			refreshParameterOptions();
+			el("customCommand").value = settings.customCommand || "";
+			el("commandType").value = settings.commandType || "command";
+			el("pollIntervalSec").value = settings.pollIntervalSec ?? 20;
+			updateCommandVisibility();
+
+			populateSceneSelect(el("scene1Select"), settings.scene1Id, settings.scene1Name);
+			populateSceneSelect(el("scene2Select"), settings.scene2Id, settings.scene2Name);
+			populateSceneSelect(el("scene3Select"), settings.scene3Id, settings.scene3Name);
+
+			suppressSave = false;
+		}
+
+		/** 選択中デバイスが実際に対応しているパラメーターのみを選択肢に表示する */
+		function refreshParameterOptions() {
+			var select = el("parameterTarget");
+			var previous = settings.parameterTarget;
+			select.innerHTML = PI.buildParameterOptionsHtml(settings.deviceType, PARAMETER_PRESETS);
+			var allowedValues = Array.prototype.map.call(select.options, function (o) { return o.value; });
+			if (allowedValues.indexOf(previous) === -1) {
+				settings.parameterTarget = "";
+			}
+			select.value = settings.parameterTarget;
+		}
+
+		function updateCommandVisibility() {
+			var value = el("parameterTarget").value;
+			var isCustom = value === "custom";
+			el("custom-command-field").style.display = isCustom ? "" : "none";
+			el("command-type-field").style.display = isCustom ? "" : "none";
+			el("color-hint").style.display = value === "color" ? "" : "none";
+		}
+
+		function populateDeviceSelect(selectEl, currentId, currentName) {
+			var filtered = PI.filterDevicesForDial(deviceList, "tapelight");
+			PI.populateSelect(selectEl, filtered, "deviceId", "deviceName", currentId, currentName, "deviceType");
+		}
+
+		function populateSceneSelect(selectEl, currentId, currentName) {
+			PI.populateSelect(selectEl, sceneList, "sceneId", "sceneName", currentId, currentName);
+		}
+
+		function bindEvents() {
+			el("deviceSelect").addEventListener("change", function (e) {
+				var opt = e.target.selectedOptions[0];
+				settings.deviceId = e.target.value;
+				settings.deviceName = e.target.value ? opt.textContent : "";
+				settings.deviceType = e.target.value ? (opt.getAttribute("data-type") || "") : "";
+				refreshParameterOptions();
+				updateCommandVisibility();
+				saveSettings();
+			});
+			el("device-refresh").addEventListener("click", function () {
+				requestDevices(el("device-refresh"));
+			});
+			el("parameterTarget").addEventListener("change", function (e) {
+				settings.parameterTarget = e.target.value;
+				updateCommandVisibility();
+				saveSettings();
+			});
+			el("customCommand").addEventListener("input", function (e) {
+				settings.customCommand = e.target.value;
+				saveSettings();
+			});
+			el("commandType").addEventListener("change", function (e) {
+				settings.commandType = e.target.value;
+				saveSettings();
+			});
+			el("pollIntervalSec").addEventListener("input", function (e) {
+				settings.pollIntervalSec = Number(e.target.value) || 20;
+				saveSettings();
+			});
+
+			[["scene1Select", "scene1Id", "scene1Name"], ["scene2Select", "scene2Id", "scene2Name"], ["scene3Select", "scene3Id", "scene3Name"]].forEach(
+				function (entry) {
+					el(entry[0]).addEventListener("change", function (e) {
+						var opt = e.target.selectedOptions[0];
+						settings[entry[1]] = e.target.value;
+						settings[entry[2]] = e.target.value ? opt.textContent : "";
+						saveSettings();
+					});
+				}
+			);
+
+			el("scene-refresh").addEventListener("click", function () {
+				requestScenes(el("scene-refresh"));
+			});
+
+			el("g-token").addEventListener("input", function (e) {
+				globalSettings.token = e.target.value;
+				saveGlobalSettings();
+			});
+			el("g-secret").addEventListener("input", function (e) {
+				globalSettings.secret = e.target.value;
+				saveGlobalSettings();
+			});
+			el("show-credentials").addEventListener("change", function (e) {
+				var type = e.target.checked ? "text" : "password";
+				el("g-token").type = type;
+				el("g-secret").type = type;
+			});
+		}
+
+		function saveSettings() {
+			if (suppressSave || !websocket || websocket.readyState !== 1) return;
+			websocket.send(JSON.stringify({ event: "setSettings", context: piUUID, payload: settings }));
+		}
+
+		function saveGlobalSettings() {
+			if (!websocket || websocket.readyState !== 1) return;
+			websocket.send(JSON.stringify({ event: "setGlobalSettings", context: piUUID, payload: globalSettings }));
+		}
+
+		function requestDevices(btn) {
+			if (!globalSettings.token || !globalSettings.secret) {
+				showStatus(PI.t("status.credentials_missing_input"), true);
+				return;
+			}
+			if (btn) { btn.disabled = true; btn.textContent = PI.t("button.refreshing"); }
+			showStatus("", false);
+			websocket.send(JSON.stringify({
+				action: actionInfo.action,
+				event: "sendToPlugin",
+				context: piUUID,
+				payload: { event: "getDevices" }
+			}));
+			setTimeout(function () {
+				if (btn) { btn.disabled = false; btn.textContent = PI.t("button.refresh"); }
+			}, 4000);
+		}
+
+		function requestScenes(btn) {
+			if (!globalSettings.token || !globalSettings.secret) {
+				showStatus(PI.t("status.credentials_missing_input"), true);
+				return;
+			}
+			if (btn) { btn.disabled = true; btn.textContent = PI.t("button.refreshing"); }
+			showStatus("", false);
+			websocket.send(JSON.stringify({
+				action: actionInfo.action,
+				event: "sendToPlugin",
+				context: piUUID,
+				payload: { event: "getScenes" }
+			}));
+			setTimeout(function () {
+				if (btn) { btn.disabled = false; btn.textContent = PI.t("button.refresh"); }
+			}, 4000);
+		}
+
+		function showStatus(msg, isError) {
+			var box = el("global-status");
+			box.textContent = msg;
+			box.className = "status-msg" + (msg ? (isError ? " error" : " ok") : "");
+		}
+
+		function handlePluginMessage(payload) {
+			if (!payload || !payload.event) return;
+			var sceneBtn = el("scene-refresh");
+			if (sceneBtn) { sceneBtn.disabled = false; sceneBtn.textContent = PI.t("button.refresh"); }
+			var deviceBtn = el("device-refresh");
+			if (deviceBtn) { deviceBtn.disabled = false; deviceBtn.textContent = PI.t("button.refresh"); }
+
+			if (payload.event === "devices") {
+				deviceList = payload.devices || [];
+				applySettingsToForm();
+				showStatus(PI.t("status.devices_updated", { count: deviceList.length }), false);
+			} else if (payload.event === "scenes") {
+				sceneList = payload.scenes || [];
+				applySettingsToForm();
+				showStatus(PI.t("status.scenes_updated", { count: sceneList.length }), false);
+			} else if (payload.event === "error") {
+				var keys = {
+					"credentials-missing": "error.credentials_missing",
+					"fetch-devices-failed": "error.fetch_devices_failed",
+					"fetch-scenes-failed": "error.fetch_scenes_failed",
+					"unexpected-error": "error.unexpected"
+				};
+				showStatus(PI.t(keys[payload.message] || "error.generic"), true);
+			}
+		}
+
+		window.connectElgatoStreamDeckSocket = function (inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
+			piUUID = inUUID;
+			actionInfo = JSON.parse(inActionInfo);
+			settings = (actionInfo.payload && actionInfo.payload.settings) || {};
+
+			var info = JSON.parse(inInfo);
+			PI.setLanguage(info.application && info.application.language);
+			PI.applyStaticI18n();
+
+			websocket = new WebSocket("ws://127.0.0.1:" + inPort);
+
+			websocket.onopen = function () {
+				websocket.send(JSON.stringify({ event: inRegisterEvent, uuid: inUUID }));
+				websocket.send(JSON.stringify({ event: "getGlobalSettings", context: inUUID }));
+				bindEvents();
+				applySettingsToForm();
+			};
+
+			websocket.onmessage = function (evt) {
+				var data = JSON.parse(evt.data);
+				if (data.event === "didReceiveSettings") {
+					settings = (data.payload && data.payload.settings) || {};
+					applySettingsToForm();
+				} else if (data.event === "didReceiveGlobalSettings") {
+					globalSettings = (data.payload && data.payload.settings) || {};
+					el("g-token").value = globalSettings.token || "";
+					el("g-secret").value = globalSettings.secret || "";
+
+					if (globalSettings.deviceListCache && globalSettings.deviceListCache.updatedAt > lastDeviceCacheAt) {
+						lastDeviceCacheAt = globalSettings.deviceListCache.updatedAt;
+						handlePluginMessage({ event: "devices", devices: globalSettings.deviceListCache.devices });
+					}
+					if (globalSettings.sceneListCache && globalSettings.sceneListCache.updatedAt > lastSceneCacheAt) {
+						lastSceneCacheAt = globalSettings.sceneListCache.updatedAt;
+						handlePluginMessage({ event: "scenes", scenes: globalSettings.sceneListCache.scenes });
+					}
+					if (globalSettings.listError && globalSettings.listError.updatedAt > lastErrorAt) {
+						lastErrorAt = globalSettings.listError.updatedAt;
+						handlePluginMessage({ event: "error", message: globalSettings.listError.message });
+					}
+
+					if (globalSettings.token && globalSettings.secret) {
+						if (deviceList.length === 0) requestDevices();
+						if (sceneList.length === 0) requestScenes();
+					}
+				} else if (data.event === "sendToPropertyInspector") {
+					handlePluginMessage(data.payload);
+				}
+			};
+		};
+	})();
+	</script>
+</body>
+</html>

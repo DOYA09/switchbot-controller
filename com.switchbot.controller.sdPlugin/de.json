@@ -1,0 +1,65 @@
+{
+  "Description": "Steuere SwitchBot-Geräte, Szenen, LED-Streifen und Sensoren direkt vom Stream Deck aus. (Inoffizielles Plugin, keine Verbindung zu SwitchBot)",
+
+  "com.switchbot.controller.single": {
+    "Name": "Einzelaktion",
+    "Tooltip": "Weist einer einzelnen Taste einen SwitchBot-Gerätebefehl oder eine Szene zu."
+  },
+  "com.switchbot.controller.toggle": {
+    "Name": "Umschaltaktion",
+    "Tooltip": "Registriert zwei Aktionen (① und ②) und wechselt bei jedem Tastendruck zwischen ihnen. Eigene Symbole für ① und ② lassen sich durch Klick auf das Tastenbild in Stream Deck festlegen."
+  },
+  "com.switchbot.controller.control": {
+    "Name": "Dreifachaktion",
+    "Tooltip": "Weist SwitchBot-Gerätebefehle oder Szenen einem einfachen Tastendruck, Doppelklick und langem Drücken zu."
+  },
+  "com.switchbot.controller.sensor": {
+    "Name": "Sensoranzeige",
+    "Tooltip": "Ruft regelmäßig Werte (Temperatur, Luftfeuchtigkeit usw.) eines SwitchBot-Sensors ab und zeigt sie an."
+  },
+  "com.switchbot.controller.scenebrowser": {
+    "Name": "Szenen-Bibliothek",
+    "Tooltip": "Drehen zum Durchblättern gespeicherter Szenen, drücken zum Ausführen der ausgewählten Szene.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Szene wechseln",
+        "Push": "Ausgewählte Szene ausführen",
+        "Touch": "Szenenliste aktualisieren"
+      }
+    }
+  },
+  "com.switchbot.controller.accontrol": {
+    "Name": "Klimaanlagen-Steuerung",
+    "Tooltip": "Steuert Temperatur, Modus und Stromversorgung einer SwitchBot-Klimaanlage (Infrarot-Fernbedienung) über den Stream Deck +-Regler.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Zieltemperatur anpassen (16-30°C / 60-90°F)",
+        "Push": "Stromversorgung ein-/ausschalten",
+        "Touch": "Durch aktivierte Modi wechseln"
+      }
+    }
+  },
+  "com.switchbot.controller.paramdial": {
+    "Name": "Parameter-Steuerung",
+    "Tooltip": "Ein universeller Regler zum Anpassen eines beliebigen numerischen Parameters (Helligkeit, Vorhangposition, Farbtemperatur usw.).",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Wert anpassen (in Schritten)",
+        "Push": "Stromversorgung ein-/ausschalten",
+        "Touch": "Konfigurierte Aktionen der Reihe nach ausführen (langes Drücken synchronisiert den Wert)"
+      }
+    }
+  },
+  "com.switchbot.controller.tapelight": {
+    "Name": "LED-Streifen-Steuerung",
+    "Tooltip": "Steuert Helligkeit, Stromversorgung und Szenen eines SwitchBot-LED-Streifens über den Stream Deck +-Regler.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Wert anpassen",
+        "Push": "Stromversorgung ein-/ausschalten",
+        "Touch": "Gespeicherte Szenen durchschalten",
+        "LongTouch": "Aktuellen Status neu synchronisieren"
+      }
+    }
+  }
+}

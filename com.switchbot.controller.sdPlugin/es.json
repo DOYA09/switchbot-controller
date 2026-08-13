@@ -1,0 +1,65 @@
+{
+  "Description": "Controla tus dispositivos, escenas, tiras de luz y sensores SwitchBot desde tu Stream Deck. (Plugin no oficial, sin relación con SwitchBot)",
+
+  "com.switchbot.controller.single": {
+    "Name": "Acción simple",
+    "Tooltip": "Asigna una sola operación de dispositivo SwitchBot o escena a una tecla."
+  },
+  "com.switchbot.controller.toggle": {
+    "Name": "Acción de alternancia",
+    "Tooltip": "Registra dos operaciones (① y ②) y alterna entre ellas con cada pulsación. Puedes asignar iconos individuales a ① y ② haciendo clic en la imagen de la tecla en Stream Deck."
+  },
+  "com.switchbot.controller.control": {
+    "Name": "Acción triple",
+    "Tooltip": "Asigna operaciones de dispositivos SwitchBot o escenas a una pulsación simple, doble o larga en una tecla."
+  },
+  "com.switchbot.controller.sensor": {
+    "Name": "Visor de sensor",
+    "Tooltip": "Obtiene y muestra periódicamente valores (temperatura, humedad, etc.) de un sensor SwitchBot."
+  },
+  "com.switchbot.controller.scenebrowser": {
+    "Name": "Biblioteca de escenas",
+    "Tooltip": "Gira para recorrer tus escenas guardadas, pulsa para ejecutar la seleccionada.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Cambiar de escena",
+        "Push": "Ejecutar la escena seleccionada",
+        "Touch": "Actualizar la lista de escenas"
+      }
+    }
+  },
+  "com.switchbot.controller.accontrol": {
+    "Name": "Control de aire acondicionado",
+    "Tooltip": "Controla la temperatura, el modo y el encendido de un aire acondicionado SwitchBot (mando infrarrojo) desde el dial de un Stream Deck +.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Ajustar la temperatura objetivo (16-30°C / 60-90°F)",
+        "Push": "Alternar encendido/apagado",
+        "Touch": "Recorrer los modos habilitados"
+      }
+    }
+  },
+  "com.switchbot.controller.paramdial": {
+    "Name": "Control de parámetro",
+    "Tooltip": "Un dial de uso general para ajustar cualquier parámetro numérico (brillo, posición de cortina, temperatura de color, etc.).",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Ajustar el valor (por pasos)",
+        "Push": "Alternar encendido/apagado",
+        "Touch": "Ejecutar las operaciones configuradas en orden (mantener pulsado sincroniza el valor)"
+      }
+    }
+  },
+  "com.switchbot.controller.tapelight": {
+    "Name": "Control de tira de luz",
+    "Tooltip": "Controla el brillo, la alimentación y las escenas de una tira de luz SwitchBot desde el dial de un Stream Deck +.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Ajustar el valor",
+        "Push": "Alternar encendido/apagado",
+        "Touch": "Recorrer las escenas guardadas",
+        "LongTouch": "Resincronizar el estado actual"
+      }
+    }
+  }
+}

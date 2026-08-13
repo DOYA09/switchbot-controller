@@ -1,0 +1,211 @@
+{
+  "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+  "UUID": "com.switchbot.controller",
+  "Name": "SwitchBot Controller",
+  "Version": "1.0.0",
+  "Author": "Doya",
+  "Description": "SwitchBotのデバイス操作・シーン実行・テープライトの明るさ調整・センサー値表示をStream Deckから行えます。(非公式・SwitchBot社とは無関係の個人開発プラグインです)",
+  "Icon": "imgs/plugin/marketplace",
+  "CategoryIcon": "imgs/plugin/category-icon",
+  "Category": "SwitchBot Controller",
+  "CodePath": "bin/plugin.js",
+  "URL": "https://github.com/DOYA09/switchbot-controller",
+  "SDKVersion": 2,
+  "Software": {
+    "MinimumVersion": "6.5"
+  },
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.15"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "enabled"
+  },
+  "Actions": [
+    {
+      "UUID": "com.switchbot.controller.single",
+      "Name": "シングルアクション",
+      "Tooltip": "SwitchBotのデバイス操作やシーン実行を、キー1つに1操作だけ割り当てます。",
+      "Icon": "imgs/actions/single/icon",
+      "PropertyInspectorPath": "ui/single.html",
+      "SupportedInMultiActions": true,
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/single/key",
+          "TitleAlignment": "bottom",
+          "FontSize": "9"
+        }
+      ]
+    },
+    {
+      "UUID": "com.switchbot.controller.toggle",
+      "Name": "トグルアクション",
+      "Tooltip": "2つの操作(①②)を登録し、キーを押すたびに交互に実行します。①②それぞれのアイコンはキーの画像をクリックして個別に設定できます。",
+      "Icon": "imgs/actions/toggle/icon",
+      "PropertyInspectorPath": "ui/toggle.html",
+      "SupportedInMultiActions": false,
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/toggle/key-a",
+          "TitleAlignment": "bottom",
+          "FontSize": "9"
+        },
+        {
+          "Image": "imgs/actions/toggle/key-b",
+          "TitleAlignment": "bottom",
+          "FontSize": "9"
+        }
+      ]
+    },
+    {
+      "UUID": "com.switchbot.controller.control",
+      "Name": "トリプルアクション",
+      "Tooltip": "SwitchBotデバイスの操作やシーン実行を、シングル/ダブル/ホールドプレスに割り当てます。",
+      "Icon": "imgs/actions/control/icon",
+      "PropertyInspectorPath": "ui/control.html",
+      "SupportedInMultiActions": false,
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/control/key",
+          "TitleAlignment": "bottom",
+          "FontSize": "9"
+        }
+      ]
+    },
+    {
+      "UUID": "com.switchbot.controller.sensor",
+      "Name": "センサー表示",
+      "Tooltip": "温湿度計などのSwitchBotデバイスの値を定期的に取得し、キーに表示します。",
+      "Icon": "imgs/actions/sensor/icon",
+      "PropertyInspectorPath": "ui/sensor.html",
+      "SupportedInMultiActions": false,
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/sensor/key",
+          "TitleAlignment": "middle",
+          "FontSize": "13"
+        }
+      ]
+    },
+    {
+      "UUID": "com.switchbot.controller.tapelight",
+      "Name": "テープライトコントロール",
+      "Tooltip": "Stream Deck + のダイヤルでSwitchBotテープライトの明るさ・電源・シーンを操作します。",
+      "Icon": "imgs/actions/tapelight/icon",
+      "PropertyInspectorPath": "ui/tapelight.html",
+      "SupportedInMultiActions": false,
+      "Controllers": [
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$B1",
+        "TriggerDescription": {
+          "Rotate": "設定した値を上下",
+          "Push": "電源のオン/オフを切替",
+          "Touch": "登録シーンを順番に切替",
+          "LongTouch": "現在の状態を再取得"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/tapelight/key",
+          "Title": ""
+        }
+      ]
+    },
+    {
+      "UUID": "com.switchbot.controller.accontrol",
+      "Name": "エアコンコントロール",
+      "Tooltip": "Stream Deck + のダイヤルでSwitchBotのエアコン(赤外線リモコン)の温度・モード・電源を操作します。",
+      "Icon": "imgs/actions/accontrol/icon",
+      "PropertyInspectorPath": "ui/accontrol.html",
+      "SupportedInMultiActions": false,
+      "Controllers": [
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$B1",
+        "TriggerDescription": {
+          "Rotate": "設定温度を調整(16〜30℃/60〜90℉)",
+          "Push": "電源のオン/オフを切替",
+          "Touch": "有効なモードを順番に切替"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/accontrol/key",
+          "Title": ""
+        }
+      ]
+    },
+    {
+      "UUID": "com.switchbot.controller.paramdial",
+      "Name": "パラメーターコントロール",
+      "Tooltip": "回転で任意の数値パラメーター(明るさ/カーテン位置/色温度など)を調整する汎用ダイヤルです。",
+      "Icon": "imgs/actions/paramdial/icon",
+      "PropertyInspectorPath": "ui/paramdial.html",
+      "SupportedInMultiActions": false,
+      "Controllers": [
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$B1",
+        "TriggerDescription": {
+          "Rotate": "設定した値を上下(刻み幅ごと)",
+          "Push": "電源のオン/オフを切替",
+          "Touch": "設定した操作を順番に実行(長押しで値を同期)"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/paramdial/key",
+          "Title": ""
+        }
+      ]
+    },
+    {
+      "UUID": "com.switchbot.controller.scenebrowser",
+      "Name": "シーンライブラリ",
+      "Tooltip": "回転で登録済みシーンを一覧から選び、押し込むと実行します。",
+      "Icon": "imgs/actions/scenebrowser/icon",
+      "PropertyInspectorPath": "ui/scenebrowser.html",
+      "SupportedInMultiActions": false,
+      "Controllers": [
+        "Encoder"
+      ],
+      "Encoder": {
+        "layout": "$B1",
+        "TriggerDescription": {
+          "Rotate": "シーンを切り替え",
+          "Push": "選択中のシーンを実行",
+          "Touch": "シーン一覧を再取得"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/scenebrowser/key",
+          "Title": ""
+        }
+      ]
+    }
+  ]
+}

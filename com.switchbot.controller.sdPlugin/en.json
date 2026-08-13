@@ -1,0 +1,123 @@
+{
+  "Description": "Control SwitchBot devices, scenes, strip lights, and sensors from your Stream Deck. (Unofficial plugin, not affiliated with SwitchBot)",
+
+  "com.switchbot.controller.single": {
+    "Name": "Single Action",
+    "Tooltip": "Assign one SwitchBot device operation or scene to a single key."
+  },
+  "com.switchbot.controller.toggle": {
+    "Name": "Toggle Action",
+    "Tooltip": "Register two operations (① and ②) and alternate between them on each press. Set individual icons for ① and ② by clicking the key image in Stream Deck."
+  },
+  "com.switchbot.controller.control": {
+    "Name": "Triple Action",
+    "Tooltip": "Assign SwitchBot device operations or scenes to single press, double press, and hold on one key."
+  },
+  "com.switchbot.controller.sensor": {
+    "Name": "Sensor Display",
+    "Tooltip": "Periodically fetch and display values (temperature, humidity, etc.) from a SwitchBot sensor device."
+  },
+  "com.switchbot.controller.scenebrowser": {
+    "Name": "Scene Library",
+    "Tooltip": "Rotate to browse your saved scenes, press to run the selected one.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Switch scenes",
+        "Push": "Run the selected scene",
+        "Touch": "Refresh the scene list"
+      }
+    }
+  },
+  "com.switchbot.controller.accontrol": {
+    "Name": "AC Control",
+    "Tooltip": "Control the temperature, mode, and power of a SwitchBot air conditioner (infrared remote) from a Stream Deck + dial.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Adjust the target temperature (16-30°C / 60-90°F)",
+        "Push": "Toggle power on/off",
+        "Touch": "Cycle through the enabled modes"
+      }
+    }
+  },
+  "com.switchbot.controller.paramdial": {
+    "Name": "Parameter Control",
+    "Tooltip": "A general-purpose dial for adjusting any single numeric parameter (brightness, curtain position, color temperature, etc.).",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Adjust the value (by step)",
+        "Push": "Toggle power on/off",
+        "Touch": "Run the configured operations in order (long press syncs the value)"
+      }
+    }
+  },
+  "com.switchbot.controller.tapelight": {
+    "Name": "Strip Light Control",
+    "Tooltip": "Control a SwitchBot strip light's brightness, power, and scenes from a Stream Deck + dial.",
+    "Encoder": {
+      "TriggerDescription": {
+        "Rotate": "Adjust the value",
+        "Push": "Toggle power on/off",
+        "Touch": "Cycle through saved scenes",
+        "LongTouch": "Resync the current state"
+      }
+    }
+  },
+
+  "Localization": {
+    "app_title.control": "SwitchBot Control",
+    "app_title.single": "SwitchBot Single Action",
+    "app_title.toggle": "SwitchBot Toggle Action",
+    "app_title.sensor": "SwitchBot Sensor Display",
+    "app_title.scenebrowser": "SwitchBot Scene Library",
+    "app_title.paramdial": "SwitchBot Parameter Control",
+    "app_title.tapelight": "SwitchBot Strip Light Control",
+
+    "label.token": "Token",
+    "label.secret": "Secret Key",
+    "hint.credentials": "The token and secret key are shared with the other SwitchBot actions. Open the SwitchBot app, go to Profile > Preferences > About, tap the app version repeatedly to reveal Developer Options, and copy them from there.",
+
+    "label.target": "Target",
+    "option.target.device": "Device",
+    "option.target.scene": "Scene",
+    "label.device": "Device",
+    "label.scene": "Scene",
+    "option.unselected": "(none)",
+    "option.unfetched_suffix": " (not fetched yet)",
+    "button.refresh": "Refresh",
+    "button.refreshing": "Refreshing…",
+    "label.command": "Command",
+    "label.parameter": "Parameter",
+    "label.custom_command_name": "Command Name",
+    "placeholder.custom_command": "e.g. setMode",
+    "label.command_type": "Command Type",
+
+    "cmd.turnOn": "Turn on",
+    "cmd.turnOff": "Turn off",
+    "cmd.toggle": "Toggle",
+    "cmd.press": "Press (for Bot)",
+    "cmd.lock": "Lock",
+    "cmd.unlock": "Unlock",
+    "cmd.setPosition": "Set curtain position",
+    "cmd.setBrightness": "Set brightness",
+    "cmd.setColor": "Set color (RGB)",
+    "cmd.setColorTemperature": "Set color temperature",
+    "cmd.setAll": "Set A/C (temp/mode/fan/power)",
+    "cmd.custom": "Custom command",
+
+    "param.setPosition.label": "Position (0=open / 100=closed)",
+    "param.setBrightness.label": "Brightness (1-100)",
+    "param.setColor.label": "Color (R:G:B)",
+    "param.setColorTemperature.label": "Color temperature (2700-6500)",
+    "param.setAll.label": "temp,mode,fan,power",
+    "param.custom.label": "Parameter",
+
+    "status.credentials_missing_input": "Please enter the token and secret key first.",
+    "status.devices_updated": "Device list updated ({count} found)",
+    "status.scenes_updated": "Scene list updated ({count} found)",
+    "error.credentials_missing": "The token / secret key is not set.",
+    "error.fetch_devices_failed": "Failed to fetch the device list. Please check your token.",
+    "error.fetch_scenes_failed": "Failed to fetch the scene list. Please check your token.",
+    "error.unexpected": "An unexpected error occurred.",
+    "error.generic": "An error occurred."
+  }
+}

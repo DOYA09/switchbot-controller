@@ -1,0 +1,18 @@
+node_modules/
+dist/
+coverage/
+
+# ビルド成果物(npm run buildで生成される。ソースはsrc/にあるためコミット不要)
+com.switchbot.controller.sdPlugin/bin/*.js
+com.switchbot.controller.sdPlugin/bin/*.js.map
+com.switchbot.controller.sdPlugin/bin/crash.log
+com.switchbot.controller.sdPlugin/logs/
+
+# OS/エディタ
+.DS_Store
+Thumbs.db
+.vscode/
+*.log
+
+# パッケージ済みプラグイン(streamdeck packの出力)
+*.streamDeckPlugin
