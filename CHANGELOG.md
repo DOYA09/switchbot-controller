@@ -4,6 +4,11 @@
 
 ## v1.0.0 (最新・公開版)
 
+- **GitHub ActionsをNode.js 24対応版に更新**: `actions/checkout@v4→v5`、`actions/setup-node@v4→v5`、`actions/upload-artifact@v4→v6`に更新。あわせて、ビルドに使うNode.jsのバージョン指定も`"20"→"24"`に変更(Node.js 20は2026年4月30日に既にEOLを迎えており、GitHub Actionsのランナーからも2026年9月16日に完全に削除される予定だったため)。`softprops/action-gh-release@v2`はNode 24対応状況が未確認のため、今回は変更を見送り
+- **セキュリティ対応(CodeQL指摘への対応)**:
+  - `pi-common.js`の`populateSelect`関数で、デバイスID/シーンID(`item[idKey]`・`currentId`)がHTML属性値に未エスケープで挿入されていた箇所を`escapeHtml()`で保護(CodeQL: DOM text reinterpreted as HTML / Client-side cross-site scripting、High×2件)
+  - `control.html`の`writeSetting`関数（ドット区切りパスでの動的プロパティ書き込み）に、`__proto__`/`constructor`/`prototype`への書き込みを防ぐガードを追加(CodeQL: Prototype-polluting function、Medium×1件)
+  - `.github/workflows/build.yml`に`permissions: contents: write`を明記、`SECURITY.md`を追加(CodeQLの「Workflow does not contain permissions」警告解消・脆弱性報告窓口の明示)
 - **英語版の「開発者向け情報」リンクを復元**: 前回の手直しで誤って削除されていたのを修正(日本語版には残っていたため、両言語間で不整合が生じていた)
 
 - **README再手直し**(作者による追加修正を反映): 機能一覧の対応表で、標準4アクションもStream Deck+列に✓を表示するよう変更(Stream Deck+はStream Deckの上位互換のため技術的に正しい表記)。細かい言い回しの調整、「Air Conditioner Control」の英語表記を日本語版内で「エアコンコントロール」に統一

@@ -1332,10 +1332,10 @@ window.SwitchBotPI = (function () {
 			if (selected) found = true;
 			var typeAttr = typeKey && item[typeKey] ? ' data-type="' + escapeHtml(item[typeKey]) + '"' : "";
 			html +=
-				'<option value="' + item[idKey] + '"' + (selected ? " selected" : "") + typeAttr + ">" + escapeHtml(item[nameKey]) + "</option>";
+				'<option value="' + escapeHtml(item[idKey]) + '"' + (selected ? " selected" : "") + typeAttr + ">" + escapeHtml(item[nameKey]) + "</option>";
 		});
 		if (!found && currentId) {
-			html += '<option value="' + currentId + '" selected>' + escapeHtml(currentName || currentId) + t("option.unfetched_suffix") + "</option>";
+			html += '<option value="' + escapeHtml(currentId) + '" selected>' + escapeHtml(currentName || currentId) + t("option.unfetched_suffix") + "</option>";
 		}
 		selectEl.innerHTML = html;
 	}

@@ -294,14 +294,24 @@
 			}
 		}
 
+		// path中に "__proto__" / "constructor" / "prototype" が含まれる場合は
+		// Object.prototype を汚染しうるため、書き込みを行わず安全側に倒す。
+		var UNSAFE_KEYS = { "__proto__": true, "constructor": true, "prototype": true };
+
 		function writeSetting(path, value) {
 			var keys = path.split(".");
 			var cur = settings;
 			for (var i = 0; i < keys.length - 1; i++) {
-				if (!cur[keys[i]]) cur[keys[i]] = {};
-				cur = cur[keys[i]];
+				var key = keys[i];
+				if (UNSAFE_KEYS[key]) return;
+				if (!Object.prototype.hasOwnProperty.call(cur, key) || typeof cur[key] !== "object" || cur[key] === null) {
+					cur[key] = {};
+				}
+				cur = cur[key];
 			}
-			cur[keys[keys.length - 1]] = value;
+			var lastKey = keys[keys.length - 1];
+			if (UNSAFE_KEYS[lastKey]) return;
+			cur[lastKey] = value;
 		}
 
 		function bindEvents() {
