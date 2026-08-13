@@ -287,7 +287,7 @@
 				var current = el(k + "-parameter").value;
 				if (forceReset || !current || current === "default") {
 					el(k + "-parameter").value = meta.default;
-					writeSetting(k + ".parameter", meta.default);
+					writeSetting(k, "parameter", meta.default);
 				}
 			} else {
 				el(k + "-param-field").style.display = "none";
@@ -296,27 +296,24 @@
 
 		// __proto__ / constructor / prototype への書き込みを許すと、
 		// Object.prototype 自体を汚染できてしまう(プロトタイプ汚染)。
-		// path中にこれらのキーワードが1つでも含まれていれば、走査・代入を一切行わない。
+		// group/fieldのいずれかがこれらのキーワードであれば、代入を一切行わない。
+		//
+		// 以前はドット区切りの可変長パス("single.enabled"等)を分割し、
+		// ループで任意の深さを辿って代入する実装だったが、実際の呼び出しは
+		// 常に「グループ名.固定フィールド名」の2階層のみで、可変長である必要が
+		// 無いため、ループ・再帰を伴わない1階層のみの代入に書き換えた。
 		var UNSAFE_KEYS = ["__proto__", "constructor", "prototype"];
 
 		function isUnsafeSettingKey(key) {
 			return UNSAFE_KEYS.indexOf(key) !== -1;
 		}
 
-		function writeSetting(path, value) {
-			var keys = path.split(".");
-			for (var i = 0; i < keys.length; i++) {
-				if (isUnsafeSettingKey(keys[i])) return;
+		function writeSetting(group, field, value) {
+			if (isUnsafeSettingKey(group) || isUnsafeSettingKey(field)) return;
+			if (!Object.prototype.hasOwnProperty.call(settings, group) || typeof settings[group] !== "object" || settings[group] === null) {
+				return;
 			}
-			var cur = settings;
-			for (var j = 0; j < keys.length - 1; j++) {
-				var key = keys[j];
-				if (!Object.prototype.hasOwnProperty.call(cur, key) || typeof cur[key] !== "object" || cur[key] === null) {
-					cur[key] = {};
-				}
-				cur = cur[key];
-			}
-			cur[keys[keys.length - 1]] = value;
+			settings[group][field] = value;
 		}
 
 		function bindEvents() {
@@ -325,45 +322,45 @@
 				PI.bindAcFieldEvents(el, k + "-", function () { return settings[k]; }, saveSettings);
 
 				el(k + "-enabled").addEventListener("change", function (e) {
-					writeSetting(k + ".enabled", e.target.checked);
+					writeSetting(k, "enabled", e.target.checked);
 					saveSettings();
 				});
 				el(k + "-targetType").addEventListener("change", function (e) {
-					writeSetting(k + ".targetType", e.target.value);
+					writeSetting(k, "targetType", e.target.value);
 					updateTargetVisibility(k);
 					saveSettings();
 				});
 				el(k + "-command").addEventListener("change", function (e) {
-					writeSetting(k + ".command", e.target.value);
+					writeSetting(k, "command", e.target.value);
 					updateParamVisibility(k, true);
 					saveSettings();
 				});
 				el(k + "-parameter").addEventListener("input", function (e) {
-					writeSetting(k + ".parameter", e.target.value);
+					writeSetting(k, "parameter", e.target.value);
 					saveSettings();
 				});
 				el(k + "-customCommand").addEventListener("input", function (e) {
-					writeSetting(k + ".customCommand", e.target.value);
+					writeSetting(k, "customCommand", e.target.value);
 					saveSettings();
 				});
 				el(k + "-commandType").addEventListener("change", function (e) {
-					writeSetting(k + ".commandType", e.target.value);
+					writeSetting(k, "commandType", e.target.value);
 					saveSettings();
 				});
 				el(k + "-deviceSelect").addEventListener("change", function (e) {
 					var opt = e.target.selectedOptions[0];
-					writeSetting(k + ".deviceId", e.target.value);
-					writeSetting(k + ".deviceName", e.target.value ? opt.textContent : "");
-					writeSetting(k + ".deviceType", e.target.value ? (opt.getAttribute("data-type") || "") : "");
-					writeSetting(k + ".command", "");
+					writeSetting(k, "deviceId", e.target.value);
+					writeSetting(k, "deviceName", e.target.value ? opt.textContent : "");
+					writeSetting(k, "deviceType", e.target.value ? (opt.getAttribute("data-type") || "") : "");
+					writeSetting(k, "command", "");
 					refreshCommandOptions(k);
 					updateParamVisibility(k, true);
 					saveSettings();
 				});
 				el(k + "-sceneSelect").addEventListener("change", function (e) {
 					var opt = e.target.selectedOptions[0];
-					writeSetting(k + ".sceneId", e.target.value);
-					writeSetting(k + ".sceneName", e.target.value ? opt.textContent : "");
+					writeSetting(k, "sceneId", e.target.value);
+					writeSetting(k, "sceneName", e.target.value ? opt.textContent : "");
 					saveSettings();
 				});
 			});
