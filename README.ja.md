@@ -72,18 +72,18 @@ SwitchBotには公式のAPIが公開されていますが、自分のツール�
 | ③ コマンドのパラメータ形式を調べる | ③ 実行 |
 | ④ Device IDを調べて入力する | |
 | ⑤ 実行してエラーと格闘する | |
-| **→ 数時間かかることも** | **→ 数十秒** |
+| **→ 時間がかかる** | **→ 数十秒** |
 
 SwitchBot Controllerは、この面倒な工程をあらかじめ全て済ませてあります。あなたがすることは、**設定画面のプルダウンからデバイスと操作を選ぶだけ**です。
 
-- <img src="./docs/images/icons/01_single_action_512.png" width="28" height="28" alt="Single Action"> **1キー1操作** — 必要な操作をすぐに実行
-- <img src="./docs/images/icons/02_toggle_action_512.png" width="28" height="28" alt="Toggle Action"> **2つの操作を切り替え** — ON ↔ OFFなど
-- <img src="./docs/images/icons/03_triple_action_512.png" width="28" height="28" alt="Triple Action"> **シングル / ダブル / 長押し** — 1キーに最大3種類の操作を割り当て
-- <img src="./docs/images/icons/04_sensor_display_512.png" width="28" height="28" alt="Sensor Display"> **センサー表示** — 温度、湿度、バッテリー残量
-- <img src="./docs/images/icons/05_tapelight_control_512.png" width="28" height="28" alt="Strip Light Control"> **テープライト操作** — 明るさ、色温度、RGBカラー、シーン(Stream Deck +)
-- <img src="./docs/images/icons/06_accontrol_512.png" width="28" height="28" alt="Air Conditioner Control"> **エアコン操作** — 温度、モード、電源(Stream Deck +)
-- <img src="./docs/images/icons/07_paramdial_control_512.png" width="28" height="28" alt="Parameter Control"> **汎用パラメーターダイヤル** — 任意の数値をアプリを開かずに調整(Stream Deck +)
-- <img src="./docs/images/icons/08_scene_library_512.png" width="28" height="28" alt="Scene Library"> **シーンライブラリ** — SwitchBotのシーンを一覧から実行(Stream Deck +)
+- <img src="./docs/images/icons/01_single_action_512.png" width="28" height="28" alt="Single Action"> **シングルアクション** — 必要な操作をすぐに実行
+- <img src="./docs/images/icons/02_toggle_action_512.png" width="28" height="28" alt="Toggle Action"> **トグルアクション** — ON ↔ OFFなど
+- <img src="./docs/images/icons/03_triple_action_512.png" width="28" height="28" alt="Triple Action"> **トリプルアクション** — 1キーに最大3種類の操作を割り当て
+- <img src="./docs/images/icons/04_sensor_display_512.png" width="28" height="28" alt="Sensor Display"> **センサー表示** — 温度、湿度、バッテリー残量を表示
+- <img src="./docs/images/icons/05_tapelight_control_512.png" width="28" height="28" alt="Strip Light Control"> **テープライトコントロール** — 明るさ、色温度、RGBカラー、シーンを調整
+- <img src="./docs/images/icons/06_accontrol_512.png" width="28" height="28" alt="Air Conditioner Control"> **エアコンコントロール** — 温度、モード、電源を調整
+- <img src="./docs/images/icons/07_paramdial_control_512.png" width="28" height="28" alt="Parameter Control"> **パラメーターダイヤル** — 任意のデバイス、数値を調整
+- <img src="./docs/images/icons/08_scene_library_512.png" width="28" height="28" alt="Scene Library"> **シーンライブラリ** — SwitchBotのシーンを一覧から実行
 - **8言語対応** — 日本語、英語、ドイツ語、フランス語、スペイン語、韓国語、中国語（簡体字）、中国語（繁体字）
 
 ---
@@ -94,14 +94,14 @@ SwitchBot Controllerは、この面倒な工程をあらかじめ全て済ませ
 
 | アクション | Stream Deck | Stream Deck + | 機能 |
 |---|:---:|:---:|---|
-| **Single Action**（シングルアクション） | ✓ | — | 1つのデバイス操作またはシーンを実行 |
-| **Toggle Action**（トグルアクション） | ✓ | — | 2つの操作を交互に実行 |
-| **Triple Action**（トリプルアクション） | ✓ | — | シングル / ダブル / 長押しにそれぞれ操作を割り当て |
-| **Sensor Display**（センサー表示） | ✓ | — | 温度、湿度、バッテリーを表示 |
-| **Strip Light Control**（テープライトコントロール） | — | ✓ | ダイヤルでテープライトを操作 |
-| **Air Conditioner Control**（エアコンコントロール） | — | ✓ | 温度 / モード / 電源を操作 |
-| **Parameter Control**（パラメーターコントロール） | — | ✓ | 汎用的な数値パラメーターをダイヤル操作 |
-| **Scene Library**（シーンライブラリ） | — | ✓ | シーンを一覧から選択・実行 |
+| **シングルアクション** | ○ | — | 1つのデバイス操作またはシーンを実行 |
+| **トグルアクション** | ○ | — | 2つの操作を交互に実行 |
+| **トリプルアクション** | ○ | — | シングル / ダブル / 長押しにそれぞれ操作を割り当て |
+| **センサー表示** | ○ | — | 温度、湿度、バッテリーを表示 |
+| **テープライトコントロール** | — | ○ | ダイヤルでテープライトを操作 |
+| **エアコンコントロール** | — | ○ | 温度 / モード / 電源を操作 |
+| **パラメーターコントロール** | — | ○ | 汎用的な数値パラメーターをダイヤル操作 |
+| **シーンライブラリ** | — | ○ | シーンを一覧から選択・実行 |
 
 ---
 
@@ -191,6 +191,8 @@ SwitchBot Controllerは、この面倒な工程をあらかじめ全て済ませ
 5. アクション一覧から**SwitchBot Controller**を探します。
 6. キーまたはダイヤルへアクションをドラッグ＆ドロップします。
 
+ソースコードからビルドしたい場合は、「[開発者向け情報](#開発者向け情報)」を参照してください。
+
 ---
 
 ## SwitchBot APIの認証情報
@@ -229,7 +231,7 @@ SwitchBot Controllerは、この面倒な工程をあらかじめ全て済ませ
 
 実際の画面はこのようになります。
 
-### Single Actionの設定画面
+### シングルアクションの設定画面
 
 | 基本設定 | デバイス選択 | コマンド選択 |
 |:---:|:---:|:---:|
@@ -241,19 +243,19 @@ SwitchBot Controllerは、この面倒な工程をあらかじめ全て済ませ
 
 トークン / クライアントシークレットが写っている箇所は、公開にあたって黒塗りしています。
 
-### Toggle Actionの設定画面
+### トグルアクションの設定画面
 
 ![Toggle Action設定画面](./docs/images/screenshots/toggle-action-settings.png)
 
 2つの操作それぞれに、対象（デバイス/シーン）を設定します。
 
-### Triple Actionの設定画面
+### トリプルアクションの設定画面
 
 ![Triple Action設定画面](./docs/images/screenshots/triple-action-settings.png)
 
 シングルプレス・ダブルプレス・長押しそれぞれに、有効/無効と対象・コマンドを個別に設定します。
 
-### Sensor Displayの設定画面
+### センサー表示の設定画面
 
 | 設定画面 | 実機表示 |
 |:---:|:---:|
@@ -288,7 +290,7 @@ SwitchBot Controllerは、この面倒な工程をあらかじめ全て済ませ
 
 # アクション
 
-## <img src="./docs/images/icons/01_single_action_512.png" width="36" height="36" alt="Single Action"> Single Action
+## <img src="./docs/images/icons/01_single_action_512.png" width="36" height="36" alt="Single Action"> シングルアクション
 
 1つのStream Deckキーに、1つのSwitchBot操作を割り当てます。
 
@@ -310,7 +312,7 @@ Stream Deck標準の**Multi Action**にも対応しており、他のStream Deck
 
 ---
 
-## <img src="./docs/images/icons/02_toggle_action_512.png" width="36" height="36" alt="Toggle Action"> Toggle Action
+## <img src="./docs/images/icons/02_toggle_action_512.png" width="36" height="36" alt="Toggle Action"> トグルアクション
 
 2つの操作を交互に実行します（① → ② → ① → ② → …）。
 
@@ -326,7 +328,7 @@ Stream Deck標準の**Multi Action**にも対応しており、他のStream Deck
 
 ---
 
-## <img src="./docs/images/icons/03_triple_action_512.png" width="36" height="36" alt="Triple Action"> Triple Action
+## <img src="./docs/images/icons/03_triple_action_512.png" width="36" height="36" alt="Triple Action"> トリプルアクション
 
 1つのキーに最大3種類の操作を割り当てられます。
 
@@ -343,7 +345,7 @@ Stream Deck標準の**Multi Action**にも対応しており、他のStream Deck
 
 ---
 
-## <img src="./docs/images/icons/04_sensor_display_512.png" width="36" height="36" alt="Sensor Display"> Sensor Display
+## <img src="./docs/images/icons/04_sensor_display_512.png" width="36" height="36" alt="Sensor Display"> センサー表示
 
 SwitchBotセンサーの情報をStream Deckキー上に表示します。
 
@@ -361,9 +363,9 @@ SwitchBotセンサーの情報をStream Deckキー上に表示します。
 
 # Stream Deck +専用アクション
 
-## <img src="./docs/images/icons/05_tapelight_control_512.png" width="36" height="36" alt="Strip Light Control"> Strip Light Control
+## <img src="./docs/images/icons/05_tapelight_control_512.png" width="36" height="36" alt="Strip Light Control"> テープライトコントロール
 
-SwitchBot Strip Light / 対応するテープライトをStream Deck +のダイヤルから操作します。
+SwitchBotテープライト / 対応するテープライトをStream Deck +のダイヤルから操作します。
 
 ### ダイヤル
 
@@ -381,7 +383,7 @@ SwitchBot Strip Light / 対応するテープライトをStream Deck +のダイ�
 
 ---
 
-## <img src="./docs/images/icons/06_accontrol_512.png" width="36" height="36" alt="Air Conditioner Control"> Air Conditioner Control
+## <img src="./docs/images/icons/06_accontrol_512.png" width="36" height="36" alt="Air Conditioner Control"> エアコンコントロール
 
 SwitchBotの赤外線エアコンリモコンをStream Deck +のダイヤルから操作します。
 
@@ -403,7 +405,7 @@ SwitchBotの赤外線リモコンは、Hub経由で信号を送信するだけ�
 
 ---
 
-## <img src="./docs/images/icons/07_paramdial_control_512.png" width="36" height="36" alt="Parameter Control"> Parameter Control
+## <img src="./docs/images/icons/07_paramdial_control_512.png" width="36" height="36" alt="Parameter Control"> パラメーターコントロール
 
 SwitchBotの数値パラメーターを汎用的に操作できるダイヤルです。
 
@@ -422,7 +424,7 @@ SwitchBotの数値パラメーターを汎用的に操作できるダイヤル�
 
 ---
 
-## <img src="./docs/images/icons/08_scene_library_512.png" width="36" height="36" alt="Scene Library"> Scene Library
+## <img src="./docs/images/icons/08_scene_library_512.png" width="36" height="36" alt="Scene Library"> シーンライブラリ
 
 登録済みのSwitchBotシーンを、Stream Deck +のダイヤルから一覧表示・実行できます。
 
@@ -447,14 +449,14 @@ SwitchBotの数値パラメーターを汎用的に操作できるダイヤル�
 
 | デバイス | 対応コマンド |
 |---|---|
-| Bot | ON / OFF / Toggle / Press |
-| Curtain / Curtain3 / Blind Tilt / Roller Shade | ON / OFF / カーテン位置を指定 |
-| Plug / Plug Mini各種 | ON / OFF / Toggle |
-| Color Bulb / Strip Light / Strip Light 3 | ON / OFF / Toggle / 明るさ(指定・調整) / カラー(RGB) / 色温度(指定・調整) |
-| Ceiling Light / Ceiling Light Pro | ON / OFF / Toggle / 明るさ(指定・調整) / 色温度(指定・調整) |
-| Air Conditioner（赤外線） | ON / OFF / Toggle / エアコン詳細設定 / エアコン温度調整 |
-| Smart Lock / Smart Lock Pro / Smart Lock Ultra | Lock / Unlock |
-| Humidifier / Evaporative Humidifier | ON / OFF / Toggle |
+| ボット | ON / OFF / Toggle / Press |
+| カーテン各種 / ブラインドポール / ロールスクリーン | ON / OFF / カーテン位置を指定 |
+| プラグ各種 | ON / OFF / Toggle |
+| スマート電球 / テープライト各種 | ON / OFF / Toggle / 明るさ(指定・調整) / カラー(RGB) / 色温度(指定・調整) |
+| シーリングライト各種 | ON / OFF / Toggle / 明るさ(指定・調整) / 色温度(指定・調整) |
+| エアコン（赤外線） | ON / OFF / Toggle / エアコン詳細設定 / エアコン温度調整 |
+| ドアロック各種 | Lock / Unlock |
+| スマート加湿器 / 気化式加湿器 | ON / OFF / Toggle |
 
 **Custom Command**は、絞り込みが行われる場合でも常に選択肢に残ります。上表に無いデバイス種別（対応表に登録のない赤外線リモコンやセンサー類など）は絞り込みを行わず、全コマンドを表示します。
 
@@ -729,7 +731,7 @@ Issue、機能リクエスト、デバイス互換性に関する報告、Pull R
 
 ---
 
-# ⚖️ 商標・提携に関する注意
+# 商標・提携に関する注意
 
 **SwitchBot**および関連する製品名は、それぞれの権利者の商標です。本プロジェクトは独立したサードパーティ製プロジェクトであり、**SwitchBot / Wonderlabs, Inc.との提携、承認、スポンサー関係はありません。** 本プラグインは公開されているSwitchBot APIを使用しています。
 
