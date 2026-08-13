@@ -294,24 +294,29 @@
 			}
 		}
 
-		// path中に "__proto__" / "constructor" / "prototype" が含まれる場合は
-		// Object.prototype を汚染しうるため、書き込みを行わず安全側に倒す。
-		var UNSAFE_KEYS = { "__proto__": true, "constructor": true, "prototype": true };
+		// __proto__ / constructor / prototype への書き込みを許すと、
+		// Object.prototype 自体を汚染できてしまう(プロトタイプ汚染)。
+		// path中にこれらのキーワードが1つでも含まれていれば、走査・代入を一切行わない。
+		var UNSAFE_KEYS = ["__proto__", "constructor", "prototype"];
+
+		function isUnsafeSettingKey(key) {
+			return UNSAFE_KEYS.indexOf(key) !== -1;
+		}
 
 		function writeSetting(path, value) {
 			var keys = path.split(".");
+			for (var i = 0; i < keys.length; i++) {
+				if (isUnsafeSettingKey(keys[i])) return;
+			}
 			var cur = settings;
-			for (var i = 0; i < keys.length - 1; i++) {
-				var key = keys[i];
-				if (UNSAFE_KEYS[key]) return;
+			for (var j = 0; j < keys.length - 1; j++) {
+				var key = keys[j];
 				if (!Object.prototype.hasOwnProperty.call(cur, key) || typeof cur[key] !== "object" || cur[key] === null) {
 					cur[key] = {};
 				}
 				cur = cur[key];
 			}
-			var lastKey = keys[keys.length - 1];
-			if (UNSAFE_KEYS[lastKey]) return;
-			cur[lastKey] = value;
+			cur[keys[keys.length - 1]] = value;
 		}
 
 		function bindEvents() {

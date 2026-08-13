@@ -4,6 +4,7 @@
 
 ## v1.0.0 (最新・公開版)
 
+- **CodeQL「Prototype-polluting function」の再修正**: 前回のガード追加(オブジェクトハッシュによるブロックリスト)だけではCodeQLの検出パターンを解消できなかったため、①事前に全キーを検証してから走査・代入を行う構造に変更、②ブロックリストを配列+`indexOf`方式に変更(他プロジェクトで実際に採用されている安全パターンに合わせた)。正常系・`__proto__`/`constructor.prototype`経由の汚染・パス途中に危険キーワードを含むケースの全てで防御できることをテストで確認
 - **GitHub ActionsをNode.js 24対応版に更新**: `actions/checkout@v4→v5`、`actions/setup-node@v4→v5`、`actions/upload-artifact@v4→v6`に更新。あわせて、ビルドに使うNode.jsのバージョン指定も`"20"→"24"`に変更(Node.js 20は2026年4月30日に既にEOLを迎えており、GitHub Actionsのランナーからも2026年9月16日に完全に削除される予定だったため)。`softprops/action-gh-release@v2`はNode 24対応状況が未確認のため、今回は変更を見送り
 - **セキュリティ対応(CodeQL指摘への対応)**:
   - `pi-common.js`の`populateSelect`関数で、デバイスID/シーンID(`item[idKey]`・`currentId`)がHTML属性値に未エスケープで挿入されていた箇所を`escapeHtml()`で保護(CodeQL: DOM text reinterpreted as HTML / Client-side cross-site scripting、High×2件)
