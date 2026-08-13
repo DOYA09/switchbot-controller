@@ -94,10 +94,10 @@ SwitchBot Controller has already done all of that groundwork for you. All you do
 
 | Action | Stream Deck | Stream Deck + | What it does |
 |---|:---:|:---:|---|
-| **Single Action** | ✓ | — | Run one device operation or scene |
-| **Toggle Action** | ✓ | — | Alternate between two operations |
-| **Triple Action** | ✓ | — | Assign single / double / hold to different operations |
-| **Sensor Display** | ✓ | — | Show temperature, humidity, and battery level |
+| **Single Action** | ✓ | ✓ | Run one device operation or scene |
+| **Toggle Action** | ✓ | ✓ | Alternate between two operations |
+| **Triple Action** | ✓ | ✓ | Assign single / double / hold to different operations |
+| **Sensor Display** | ✓ | ✓ | Show temperature, humidity, and battery level |
 | **Strip Light Control** | — | ✓ | Control a strip light with the dial |
 | **Air Conditioner Control** | — | ✓ | Control temperature / mode / power |
 | **Parameter Control** | — | ✓ | Adjust any numeric parameter with the dial |
@@ -190,6 +190,8 @@ Steps:
 4. Launch Stream Deck.
 5. Find **SwitchBot Controller** in the action list.
 6. Drag an action onto a key or dial.
+
+If you'd like to build from source instead, see [For Developers](#for-developers).
 
 ---
 
