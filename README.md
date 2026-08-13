@@ -9,7 +9,7 @@
     <img src="./docs/images/video-thumbnail.jpg" alt="Watch the demo video" width="480">
   </a>
   <br>
-  <sub>▶ Click the image to watch a 25-second demo (opens the video file)</sub>
+  <sub>▶ Click the image, then click "View raw" to download and watch the 25-second demo</sub>
 </p>
 
 ## Control SwitchBot from your Stream Deck, more intuitively than ever.
@@ -27,7 +27,7 @@ From ON/OFF and toggles to sensors, strip lights, air conditioners, scenes, and 
 
 ---
 
-**[⬇ Download Latest Release](../../releases/latest)** · **[Report a Bug](../../issues)** · **[Request a Feature](../../issues)**
+**[⬇ Download Latest Release](../../releases/latest)** · **[Installation Instructions](#for-regular-users--recommended)** · **[Report a Bug](../../issues)** · **[Request a Feature](../../issues)**
 
 ---
 
@@ -190,6 +190,7 @@ Steps:
 4. Launch Stream Deck.
 5. Find **SwitchBot Controller** in the action list.
 6. Drag an action onto a key or dial.
+7. Enter your **Token** and **Secret Key** ([how to get them](#how-to-get-them)), and set up whichever actions you'd like to use.
 
 If you'd like to build from source instead, see [For Developers](#for-developers).
 
@@ -612,6 +613,12 @@ If this plugin has been useful to you, here's how you can help:
 
 > [!TIP]
 > If you only want to **use** the plugin, you can skip this entire section and install the `.streamDeckPlugin` release package instead (see [Installation](#installation)).
+
+Here's what the regular-user installation actually looks like in practice.
+
+| Downloaded file | Stream Deck install confirmation |
+|:---:|:---:|
+| ![Downloaded Stream Deck plugin file](./docs/images/screenshots/install-plugin-file.jpg) | ![Stream Deck install confirmation dialog](./docs/images/screenshots/install-confirm-dialog.jpg) |
 
 ### Install from source
 
