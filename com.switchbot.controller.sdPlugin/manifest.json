@@ -43,7 +43,7 @@
         {
           "Image": "imgs/actions/single/key",
           "TitleAlignment": "bottom",
-          "FontSize": "9"
+          "FontSize": 9
         }
       ]
     },
@@ -61,12 +61,12 @@
         {
           "Image": "imgs/actions/toggle/key-a",
           "TitleAlignment": "bottom",
-          "FontSize": "9"
+          "FontSize": 9
         },
         {
           "Image": "imgs/actions/toggle/key-b",
           "TitleAlignment": "bottom",
-          "FontSize": "9"
+          "FontSize": 9
         }
       ]
     },
@@ -84,7 +84,7 @@
         {
           "Image": "imgs/actions/control/key",
           "TitleAlignment": "bottom",
-          "FontSize": "9"
+          "FontSize": 9
         }
       ]
     },
@@ -102,7 +102,7 @@
         {
           "Image": "imgs/actions/sensor/key",
           "TitleAlignment": "middle",
-          "FontSize": "13"
+          "FontSize": 13
         }
       ]
     },
