@@ -1,0 +1,60 @@
+name: ❓ 質問・サポート (Question / Support)
+description: 設定方法、使い方、対応状況などについて質問する
+title: "[Question] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        不具合かどうか分からない場合や、使い方について聞きたいことがある場合はこちらをご利用ください。
+
+        > [!IMPORTANT]
+        > **SwitchBotのAPIトークン、クライアントシークレット、パスワードなどの認証情報は、本文やスクリーンショットに絶対に含めないでください。**
+
+  - type: textarea
+    id: question
+    attributes:
+      label: 質問内容
+      description: どのようなことでお困りですか？
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: やりたいこと
+      description: SwitchBot Controllerで何を実現したいですか？
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 環境（任意）
+      description: |
+        質問内容によっては環境情報が無くても問題ありません。分かる範囲でご記入ください。
+      placeholder: |
+        SwitchBot Controllerのバージョン：
+        Stream Deckソフトウェアのバージョン：
+        OS：
+        SwitchBotデバイス：
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: その他の情報
+      description: スクリーンショット、ログ、その他役立ちそうな情報があれば教えてください。認証情報が写り込んでいないかご確認ください。
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 確認事項
+      options:
+        - label: READMEの該当箇所（インストール・アクション説明・トラブルシューティング等）を確認しましたが、解決しませんでした。
+          required: false
+        - label: 既存のIssueを検索し、同じ質問が無いことを確認しました。
+          required: true

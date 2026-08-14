@@ -1,0 +1,125 @@
+name: 🐛 不具合報告 (Bug Report)
+description: 動作しない、正しく動かない不具合を報告する
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        不具合のご報告ありがとうございます。分かる範囲で構いませんので、ご記入をお願いします。
+
+        > [!IMPORTANT]
+        > **SwitchBotのAPIトークン、クライアントシークレット、パスワードなどの認証情報は、本文やスクリーンショットに絶対に含めないでください。**
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 問題の内容
+      description: 何が起きましたか？いつ発生しましたか？
+      placeholder: 例：エアコンコントロールのダイヤルを素早く回すと、途中で反応しなくなる。
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 問題が再現する手順を教えてください。
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待していた動作
+      description: 本来どのように動作すると思っていましたか？
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動作
+      description: 実際にはどうなりましたか？
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: プラグインのバージョン
+      description: Stream Deckのプラグイン一覧で確認できます。
+      placeholder: 例：1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: streamdeck-version
+    attributes:
+      label: Stream Deckソフトウェアのバージョン
+      description: Stream Deckアプリの設定/About欄で確認できます。
+      placeholder: 例：6.5.1
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS
+        - その他（下記に詳細を記入）
+    validations:
+      required: true
+
+  - type: input
+    id: switchbot-device
+    attributes:
+      label: SwitchBotデバイス
+      description: 関係するSwitchBotデバイス（分かれば機種名も）を教えてください。
+      placeholder: 例：SwitchBotエアコン（赤外線リモコン）、SwitchBotプラグミニ（JP）
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: ログ・エラーメッセージ
+      description: |
+        エラーメッセージやログがあれば貼り付けてください。
+        **投稿前に、個人情報やトークン/シークレットなどの機密情報が含まれていないか必ずご確認ください。**
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: スクリーンショット・動画
+      description: 問題の説明に役立つものがあれば添付してください。認証情報が写り込んでいないかご確認ください。
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: その他の情報
+      description: 他に役立ちそうな情報があれば教えてください。
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 確認事項
+      options:
+        - label: 既存のIssueを検索し、重複していないことを確認しました。
+          required: true
+        - label: SwitchBotのAPIトークン・クライアントシークレット等の認証情報を、本報告のどこにも含めていません。
+          required: true

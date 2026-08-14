@@ -31,6 +31,8 @@ From ON/OFF and toggles to sensors, strip lights, air conditioners, scenes, and 
 
 **[Report a Bug](../../issues)** · **[Request a Feature](../../issues)**
 
+※ Click "New issue" in the top right of the Issues page to get started (Japanese-language forms are also available).
+
 ---
 
 ## Table of Contents
