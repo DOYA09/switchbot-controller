@@ -594,7 +594,6 @@ Core product functionality is complete, and this repository is intended to serve
 ### Planned
 
 - [ ] Expanded device/command support from community feedback
-- [ ] Ready-to-use Stream Deck profiles
 - [ ] Listing on the Elgato Marketplace
 - [ ] Native-speaker review for additional languages
 - [ ] Parameter Control Property Inspector screenshot (once a compatible device is available)
