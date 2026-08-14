@@ -188,7 +188,7 @@ SwitchBot Controllerは、この面倒な工程をあらかじめ全て済ませ
 
 手順：
 
-1. 最新版の`.streamDeckPlugin`をダウンロードします。
+1. 最新版の`.streamDeckPlugin`を[ダウンロード](../../releases/latest)します。
 2. ダウンロードしたファイルをダブルクリックします。
 3. Stream Deckへのインストールを許可します。
 4. Stream Deckを起動します。

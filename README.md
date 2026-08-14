@@ -188,7 +188,7 @@ The easiest way is to download the latest **`.streamDeckPlugin`** file from GitH
 
 Steps:
 
-1. Download the latest `.streamDeckPlugin`.
+1. [Download](../../releases/latest) the latest `.streamDeckPlugin`.
 2. Double-click the downloaded file.
 3. Allow the installation on your Stream Deck.
 4. Launch Stream Deck.
