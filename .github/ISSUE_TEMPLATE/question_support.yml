@@ -1,0 +1,62 @@
+name: ❓ Question / Support
+description: Ask a question about setup, usage, or compatibility.
+title: "[Question] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Not sure if it's a bug, or just need help getting something set up? You're in the right place.
+
+        日本語での投稿も歓迎です。
+
+        > [!IMPORTANT]
+        > **Do not post your SwitchBot API Token, Secret Key, password, or any other credentials in this form or in any screenshots/logs.**
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What would you like help with?
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to do?
+      description: What are you trying to accomplish with SwitchBot Controller?
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment (optional)
+      description: |
+        If relevant, share what you're working with — this isn't required for every question.
+      placeholder: |
+        SwitchBot Controller version:
+        Stream Deck software version:
+        OS:
+        SwitchBot device(s):
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Screenshots, logs, or anything else that might help. Please make sure no credentials are visible.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I checked the README (installation, actions, troubleshooting sections) and didn't find an answer.
+          required: false
+        - label: I searched existing Issues and didn't find the same question.
+          required: true

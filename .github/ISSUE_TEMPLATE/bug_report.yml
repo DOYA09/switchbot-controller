@@ -1,0 +1,127 @@
+name: 🐛 Bug Report
+description: Report a problem or something that isn't working correctly.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out as much of this form as you can — it helps a lot with tracking down the issue.
+
+        日本語での投稿も歓迎です。分かる範囲でご記入ください。
+
+        > [!IMPORTANT]
+        > **Do not post your SwitchBot API Token, Secret Key, password, or any other credentials in this form or in any screenshots/logs.**
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / Description
+      description: What happened, and when did it happen?
+      placeholder: e.g. The Air Conditioner Control dial stops responding after turning the dial quickly a few times.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Please describe the steps that reproduce the problem.
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Plugin Version
+      description: The SwitchBot Controller version. You can find this in Stream Deck's plugin list.
+      placeholder: e.g. 1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: streamdeck-version
+    attributes:
+      label: Stream Deck Software Version
+      description: Found in the Stream Deck app under Settings/About.
+      placeholder: e.g. 6.5.1
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS
+        - Other (please specify below)
+    validations:
+      required: true
+
+  - type: input
+    id: switchbot-device
+    attributes:
+      label: SwitchBot Device
+      description: Which SwitchBot device(s) were involved? (Model name, if known)
+      placeholder: e.g. SwitchBot Air Conditioner (infrared remote), SwitchBot Plug Mini (JP)
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Error Message
+      description: |
+        If you have an error message or log output, paste it here.
+        **Please remove any personal or sensitive information (including tokens/secrets) before posting.**
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Videos
+      description: If applicable, add screenshots or a short video to help explain the problem. Please make sure no credentials are visible.
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Anything else that might help us understand the issue.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing Issues and didn't find a duplicate.
+          required: true
+        - label: I have not included my SwitchBot API Token, Secret Key, or other credentials anywhere in this report.
+          required: true

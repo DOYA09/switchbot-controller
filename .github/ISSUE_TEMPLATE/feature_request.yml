@@ -1,0 +1,60 @@
+name: 💡 Feature Request
+description: Suggest a new feature, device support, or improvement.
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion! Please tell us a bit about what you'd like and why — it really helps with prioritizing future work.
+
+        日本語での投稿も歓迎です。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature Description
+      description: What would you like to see added or changed?
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use Case / Why is this useful?
+      description: What problem would this solve? How would you use this feature?
+    validations:
+      required: true
+
+  - type: input
+    id: related-device
+    attributes:
+      label: SwitchBot Device / Related Feature
+      description: Any related SwitchBot device(s) or existing plugin feature, if applicable.
+      placeholder: e.g. SwitchBot Robot Vacuum, Scene Library, brightness control
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: If you have an idea for how this could work, describe it here.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives / Additional Information
+      description: Are there any alternative solutions or existing workarounds you currently use?
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing Issues and didn't find a duplicate request.
+          required: true

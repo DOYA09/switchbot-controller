@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Report a security vulnerability
+    url: https://github.com/DOYA09/switchbot-controller/security/advisories/new
+    about: Please do NOT report security vulnerabilities through public Issues. Use GitHub's Private Vulnerability Reporting instead (see SECURITY.md).
