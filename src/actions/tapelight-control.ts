@@ -201,19 +201,77 @@ async function executeSceneOrThrow(creds: SwitchBotCredentials, sceneId: string)
 async function getStatusOrThrow(
 	creds: SwitchBotCredentials,
 	deviceId: string
-): Promise<{ power: "on" | "off"; brightness?: number; colorTemperature?: number }> {
+): Promise<{ power: "on" | "off"; brightness?: number; colorTemperature?: number; color?: string }> {
 	const res = await getCachedDeviceStatus(creds, deviceId);
 	throwIfFailed(res, "SwitchBot状態取得");
 	return {
 		power: res.body.body?.power === "on" ? "on" : "off",
 		brightness: res.body.body?.brightness,
-		colorTemperature: res.body.body?.colorTemperature
+		colorTemperature: res.body.body?.colorTemperature,
+		color: res.body.body?.color
 	};
 }
 
 function normalizeColorIndex(index: number): number {
 	const n = COLOR_WHEEL.length;
 	return ((index % n) + n) % n;
+}
+
+/** SwitchBot APIが返す "R:G:B" 形式の文字列(例: "0:0:204")をRGBに変換する。不正な形式ならnull */
+function parseColorString(color: string | undefined): [number, number, number] | null {
+	if (!color) return null;
+	const parts = color.split(":").map((s) => Number(s.trim()));
+	if (parts.length !== 3 || parts.some((n) => !Number.isFinite(n))) return null;
+	return [parts[0], parts[1], parts[2]];
+}
+
+/**
+ * RGBの色相(Hue, 0〜360度)を求める。R=G=B(無彩色/グレー)の場合はnull。
+ * COLOR_WHEEL上の点は常に彩度100%・明度100%(いずれか1チャンネルが0、いずれか1チャンネルが255)
+ * であるため、実機の色を「最も近い原色」に丸める際は、RGBの絶対距離ではなく色相の近さで
+ * 比較する必要がある(そうしないと、明度だけが低い/彩度だけが低い色が、無関係な色相の
+ * 原色に丸められてしまう)。
+ */
+function rgbToHue([r, g, b]: [number, number, number]): number | null {
+	const max = Math.max(r, g, b);
+	const min = Math.min(r, g, b);
+	if (max === min) return null; // 無彩色(黒・グレー・白)は色相を持たない
+	let hue: number;
+	if (max === r) hue = 60 * (((g - b) / (max - min)) % 6);
+	else if (max === g) hue = 60 * ((b - r) / (max - min) + 2);
+	else hue = 60 * ((r - g) / (max - min) + 4);
+	return hue < 0 ? hue + 360 : hue;
+}
+
+/** COLOR_WHEEL 各点の色相(常に彩度100%・明度100%のため必ず値を持つ)。起動時に一度だけ計算 */
+const COLOR_WHEEL_HUES: number[] = COLOR_WHEEL.map((rgb) => rgbToHue(rgb) ?? 0);
+
+/**
+ * 任意のRGBに最も近い COLOR_WHEEL 上のインデックスを、色相(Hue)の近さで返す。
+ * ダイヤルは COLOR_WHEEL 上の原色しか表示できないため、実機が任意の色(例: 明度違いの
+ * #0000CC や、彩度違いの #3232FF)になっている場合でも、見た目が同じ系統の原色
+ * (例: #0000FF)に丸めて表示するために使う。無彩色(グレー等)の場合は便宜上インデックス0とする。
+ */
+function nearestColorWheelIndex(rgb: [number, number, number]): number {
+	const hue = rgbToHue(rgb);
+	if (hue === null) return 0;
+
+	let bestIndex = 0;
+	let bestDiff = Infinity;
+	for (let i = 0; i < COLOR_WHEEL_HUES.length; i++) {
+		const diff = Math.min(Math.abs(hue - COLOR_WHEEL_HUES[i]), 360 - Math.abs(hue - COLOR_WHEEL_HUES[i]));
+		if (diff < bestDiff) {
+			bestDiff = diff;
+			bestIndex = i;
+		}
+	}
+	return bestIndex;
+}
+
+/** getStatusOrThrow が返す "R:G:B" 文字列から、表示に使う COLOR_WHEEL インデックスを求める */
+function resolveNearestColorIndex(color: string | undefined): number | undefined {
+	const rgb = parseColorString(color);
+	return rgb ? nearestColorWheelIndex(rgb) : undefined;
 }
 
 /** エラーがレート制限によるものかどうかで、タッチディスプレイに表示する文言を切り替える */
@@ -413,10 +471,17 @@ export class TapeLightControlAction extends SingletonAction<TapeLightSettings> {
 		// (例: 自動同期の間隔中にスマホアプリ等で値が変更されると、キャッシュされた
 		//  表示値との間にズレが生じ、そのまま加算すると実機の値を巻き戻してしまうため)
 		const lastSynced = this.lastSyncedAt.get(ev.action.id) ?? 0;
-		if (target !== "color" && Date.now() - lastSynced > STALE_THRESHOLD_MS) {
+		if (Date.now() - lastSynced > STALE_THRESHOLD_MS) {
 			try {
 				const status = await getStatusOrThrow(creds, settings.deviceId);
-				const raw = target === "colorTemperature" ? status.colorTemperature : target === "brightness" ? status.brightness : undefined;
+				const raw =
+					target === "colorTemperature"
+						? status.colorTemperature
+						: target === "brightness"
+							? status.brightness
+							: target === "color"
+								? resolveNearestColorIndex(status.color)
+								: undefined;
 				if (typeof raw === "number") {
 					const snapped = Math.min(range.max, Math.max(range.min, Math.round(raw / range.step) * range.step));
 					settings.value = snapped;
@@ -633,7 +698,8 @@ export class TapeLightControlAction extends SingletonAction<TapeLightSettings> {
 	// タッチスクリーンへの反映処理(実機の状態取得込み)
 	// 通信エラー時はアイコンにも警告(showAlert)を表示する
 	//    (背景ポーリング中の失敗は silent=true でアイコン点滅を抑える)
-	//    カラー対象は実機から同期する手段が無いため、電源状態のみ取得する。
+	//    カラー対象は実機の色(color, "R:G:B")を取得し、COLOR_WHEEL上で最も近い原色に
+	//    丸めて同期する(ダイヤルは原色しか表示できないため)。
 	// ------------------------------------------------------------------
 	private async refreshFromDevice(
 		dial: DialAction<TapeLightSettings>,
@@ -660,7 +726,14 @@ export class TapeLightControlAction extends SingletonAction<TapeLightSettings> {
 			const status = await getStatusOrThrow(creds, settings.deviceId);
 			settings.power = status.power;
 
-			const raw = target === "colorTemperature" ? status.colorTemperature : target === "brightness" ? status.brightness : undefined;
+			const raw =
+				target === "colorTemperature"
+					? status.colorTemperature
+					: target === "brightness"
+						? status.brightness
+						: target === "color"
+							? resolveNearestColorIndex(status.color)
+							: undefined;
 			if (typeof raw === "number") {
 				const snapped = Math.min(range.max, Math.max(range.min, Math.round(raw / range.step) * range.step));
 				settings.value = snapped;

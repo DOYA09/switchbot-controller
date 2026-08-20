@@ -157,6 +157,8 @@ export function getDeviceStatus(
 		battery?: number;
 		slidePosition?: number;
 		colorTemperature?: number;
+		/** "R:G:B" 形式(例: "255:0:0")。カラー対応デバイス(テープライト等)のみ */
+		color?: string;
 	}>
 > {
 	return request(`/v1.1/devices/${encodeURIComponent(deviceId)}/status`, "GET", creds);
