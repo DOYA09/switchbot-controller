@@ -128,7 +128,8 @@
 		<div class="control"><input type="number" id="pollIntervalSec" min="5" max="300" /></div>
 	</div>
 	<div class="hint" data-i18n="tapelight.device_hint">ダイヤルを回すと明るさ、押し込むと電源オン/オフを操作します。自動同期は、スマホアプリなど他経路での操作をキーの表示に反映するための定期取得です。</div>
-	<div class="hint" id="color-hint" data-i18n="tapelight.color_hint" style="display:none">ダイヤルを回すと8色(赤→オレンジ→黄→黄緑→緑→水色→青→紫→赤)を順番に切り替えます。</div>
+	<div class="hint" id="color-hint" data-i18n="tapelight.color_hint" style="display:none">ダイヤルを回すとRGB値を15刻みで変化させ、赤→黄→緑→水色→青→マゼンタ→赤と虹色に一周します(全102ステップ)。</div>
+	<div class="hint" id="saturation-hint" data-i18n="tapelight.saturation_hint" style="display:none">ダイヤルを回すと彩度を変化させます(0%で白、100%で現在のカラーの原色)。インジケーターの色は実機の現在の色に同期します。</div>
 
 	<div class="section-title" data-i18n="tapelight.scene_section">タッチ操作で切り替えるシーン</div>
 	<div class="field">
@@ -173,6 +174,7 @@
 			{ value: "brightness", labelKey: "paramdial.opt.brightness", requiredCommand: "setBrightness" },
 			{ value: "colorTemperature", labelKey: "paramdial.opt.colortemp", requiredCommand: "setColorTemperature" },
 			{ value: "color", labelKey: "tapelight.opt.color", requiredCommand: "setColor" },
+			{ value: "saturation", labelKey: "tapelight.opt.saturation", requiredCommand: "setColor" },
 			{ value: "custom", labelKey: "paramdial.opt.custom", requiredCommand: null }
 		];
 
@@ -213,6 +215,19 @@
 				settings.parameterTarget = "";
 			}
 			select.value = settings.parameterTarget;
+			syncParameterLabel();
+		}
+
+		/**
+		 * タッチディスプレイのタイトル("デバイス名-パラメーター名")用に、現在選択中の
+		 * パラメーターの表示名(翻訳済みテキスト)を settings.parameterLabel に保存する。
+		 * バックエンド(Node.js側)は各言語の文言を持たないため、PI側で解決済みの
+		 * テキストをそのまま渡す。未選択の場合は空文字にし、タイトルはデバイス名のみにする。
+		 */
+		function syncParameterLabel() {
+			var select = el("parameterTarget");
+			var opt = select.selectedOptions[0];
+			settings.parameterLabel = select.value && opt ? opt.textContent : "";
 		}
 
 		function updateCommandVisibility() {
@@ -221,6 +236,7 @@
 			el("custom-command-field").style.display = isCustom ? "" : "none";
 			el("command-type-field").style.display = isCustom ? "" : "none";
 			el("color-hint").style.display = value === "color" ? "" : "none";
+			el("saturation-hint").style.display = value === "saturation" ? "" : "none";
 		}
 
 		function populateDeviceSelect(selectEl, currentId, currentName) {
@@ -247,6 +263,7 @@
 			});
 			el("parameterTarget").addEventListener("change", function (e) {
 				settings.parameterTarget = e.target.value;
+				syncParameterLabel();
 				updateCommandVisibility();
 				saveSettings();
 			});

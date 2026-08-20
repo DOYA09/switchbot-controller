@@ -36,6 +36,8 @@ interface ParamDialSettings {
 	touch2: OperationConfig;
 	touch3: OperationConfig;
 	touchIndex: number;
+	/** PIが保存する、選択中パラメーターの翻訳済み表示名(タッチディスプレイのタイトルに使う)。PI未起動の古い設定では空 */
+	parameterLabel?: string;
 }
 
 const DEFAULT_SETTINGS: ParamDialSettings = {
@@ -76,6 +78,20 @@ interface RuntimeState {
 
 function clamp(value: number, min: number, max: number): number {
 	return Math.min(max, Math.max(min, value));
+}
+
+/**
+ * タッチディスプレイ上部のタイトルを組み立てる。「デバイス名-パラメーター名」
+ * (例: "ライト-明るさ")の形式にする。parameterLabelはPIが選択中のパラメーターの
+ * 翻訳済み表示名を保存したもの(バックエンド側では多言語文言を持たないため)。
+ * PIをまだ開いていない古い設定ではparameterLabelが無いため、その場合は
+ * デバイス名のみ(従来通り)にフォールバックする。
+ */
+function buildTitle(settings: ParamDialSettings): string {
+	const device = settings.deviceName || "";
+	const label = settings.parameterLabel || "";
+	if (device && label) return `${device}-${label}`;
+	return device || label;
 }
 
 function resolveCommand(settings: ParamDialSettings): { command: string; commandType: string } {
@@ -362,8 +378,8 @@ export class ParamDialAction extends SingletonAction<ParamDialSettings> {
 	}
 
 	private renderFeedback(dial: ActionRef, settings: ParamDialSettings): void {
-		// タッチディスプレイ上部のタイトルに、選択中のデバイス名を反映する
-		void dial.setTitle(settings.deviceName || "");
+		// タッチディスプレイ上部のタイトルに、選択中のデバイス名とパラメーターを反映する
+		void dial.setTitle(buildTitle(settings));
 
 		if (!settings.command) {
 			void dial.setFeedback({ value: "パラメーター未設定", indicator: { value: 0 } });

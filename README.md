@@ -388,7 +388,16 @@ Controls a SwitchBot Strip Light (or compatible strip light) from a Stream Deck 
 - Brightness
 - Color temperature
 - RGB color — shifts the RGB values in steps of 15, cycling through the rainbow: red → yellow → green → cyan → blue → magenta → red (102 steps total)
+- Color (Saturation) — adjusts only the saturation without changing the hue (0% is white, 100% is the fully saturated version of the current color)
 - Custom command
+
+### Indicator
+
+For **RGB color**, **Color (Saturation)**, and **color temperature**, the indicator bar's filled portion shows the light's actual color, and the empty (track) portion shows the same color dimmed to 40% brightness (equivalent to a 60%-opacity black overlay). For brightness and custom commands, where the emitted color can't be determined, the indicator keeps its default coloring.
+
+### Syncing with the actual device
+
+Strip Light Control periodically re-fetches the device's real state — every 20 seconds by default (adjustable down to a minimum of 5 seconds in the Property Inspector) — and again shortly after a scene runs. This keeps the dial in sync with changes made from the SwitchBot app, a physical remote, or a scene, including RGB color. Because the dial can only display the 102 fully-saturated hues on its color wheel, any other color reported by the device is matched to the closest hue on that wheel (for example, both a dimmer blue and a pale, less-saturated blue are shown as pure blue). The Color (Saturation) dial similarly syncs its reference hue from the device's actual color, and blends that hue with white to produce its indicator color.
 
 ---
 

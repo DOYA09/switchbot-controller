@@ -275,6 +275,19 @@
 				settings.command = "";
 			}
 			select.value = settings.command;
+			syncParameterLabel();
+		}
+
+		/**
+		 * タッチディスプレイのタイトル("デバイス名-パラメーター名")用に、現在選択中の
+		 * パラメーターの表示名(翻訳済みテキスト)を settings.parameterLabel に保存する。
+		 * バックエンド(Node.js側)は各言語の文言を持たないため、PI側で解決済みの
+		 * テキストをそのまま渡す。未選択の場合は空文字にし、タイトルはデバイス名のみにする。
+		 */
+		function syncParameterLabel() {
+			var select = el("command");
+			var opt = select.selectedOptions[0];
+			settings.parameterLabel = select.value && opt ? opt.textContent : "";
 		}
 
 		// ---------- タッチで切り替える操作(最大3つ)のUI組み立て ----------
@@ -451,6 +464,7 @@
 			});
 			el("command").addEventListener("change", function (e) {
 				settings.command = e.target.value;
+				syncParameterLabel();
 				var preset = PRESETS[e.target.value];
 				if (preset) {
 					settings.min = preset.min;
