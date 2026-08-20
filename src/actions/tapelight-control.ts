@@ -126,6 +126,48 @@ function rgbToHex([r, g, b]: [number, number, number]): string {
 }
 
 /**
+ * 色温度(ケルビン)から近似RGBを求める(Tanner Hellandのアルゴリズムを簡略化したもの)。
+ * インジケーターの塗り色を、実際の色温度の見た目(暖色〜寒色の白)に近づけるために使う。
+ * 学術的な厳密さより「それらしい色」であることを優先している。
+ */
+function kelvinToRgb(kelvin: number): [number, number, number] {
+	const temp = kelvin / 100;
+	const clamp = (n: number) => Math.round(Math.min(255, Math.max(0, n)));
+
+	const r = temp <= 66 ? 255 : 329.698727446 * Math.pow(temp - 60, -0.1332047592);
+	const g =
+		temp <= 66
+			? 99.4708025861 * Math.log(temp) - 161.1195681661
+			: 288.1221695283 * Math.pow(temp - 60, -0.0755148492);
+	const b = temp >= 66 ? 255 : temp <= 19 ? 0 : 138.5177312231 * Math.log(temp - 10) - 305.0447927307;
+
+	return [clamp(r), clamp(g), clamp(b)];
+}
+
+/** 色を黒に不透明度60%で重ねた見た目(= 元の色の明度を40%まで落とした色)にする */
+function dimForTrack([r, g, b]: [number, number, number]): [number, number, number] {
+	const TRACK_OPACITY = 0.4; // 元の色を残す割合(=黒の不透明度60%を重ねた結果)
+	return [Math.round(r * TRACK_OPACITY), Math.round(g * TRACK_OPACITY), Math.round(b * TRACK_OPACITY)];
+}
+
+/**
+ * ダイヤルの対象(parameterTarget)と現在値から、実際の光の色をインジケーターに反映できる場合のみ
+ * 色情報を返す。color: 選択中の色そのもの。colorTemperature: 色温度からの近似色。
+ * brightness/customは実際の発光色が分からないため既定の配色(白地/グレー)のままにする(null)。
+ */
+function resolveIndicatorColors(target: string, displayValue: number): { bar_fill_c: string; bar_bg_c: string } | null {
+	let rgb: [number, number, number] | null = null;
+	if (target === "color") {
+		rgb = COLOR_WHEEL[normalizeColorIndex(displayValue)];
+	} else if (target === "colorTemperature") {
+		rgb = kelvinToRgb(displayValue);
+	}
+	if (!rgb) return null;
+
+	return { bar_fill_c: rgbToHex(rgb), bar_bg_c: rgbToHex(dimForTrack(rgb)) };
+}
+
+/**
  * 各パラメーターごとの範囲・刻み幅。PIでは編集できず、対象ごとに適した値を固定で使う
  * (SwitchBot APIの制約(明るさ1-100、色温度2700-6500等)に合わせているため)。
  */
@@ -319,6 +361,22 @@ export class TapeLightControlAction extends SingletonAction<TapeLightSettings> {
 		return Math.min(100, Math.max(0, Math.round(pct)));
 	}
 
+	/**
+	 * setFeedback の indicator に渡すペイロードを組み立てる(パーセンテージ + 可能なら実際の色)。
+	 * displayPercentOverride を指定すると、パーセンテージ表示だけを上書きする(電源オフ時に0%表示にする等、
+	 * 色そのものは元の値から求めたい場合に使う)。
+	 */
+	private indicatorPayload(settings: TapeLightSettings, displayValue: number, displayPercentOverride?: number): Record<string, unknown> {
+		const target = settings.parameterTarget || "brightness";
+		const range = this.resolveRange(settings);
+		const payload: Record<string, unknown> = {
+			value: displayPercentOverride ?? this.toIndicatorPercent(displayValue, range)
+		};
+		const colors = resolveIndicatorColors(target, displayValue);
+		if (colors) Object.assign(payload, colors);
+		return payload;
+	}
+
 	// ------------------------------------------------------------------
 	// ダイヤルを1回すと対象ごとの刻み幅(明るさ/色温度/カスタムは数値、
 	// カラーは8色のうち隣の色)だけ値が変化する。
@@ -397,7 +455,7 @@ export class TapeLightControlAction extends SingletonAction<TapeLightSettings> {
 		await ev.action.setSettings(settings);
 		await ev.action.setFeedback({
 			value: this.formatDisplayValue(settings, next),
-			indicator: { value: this.toIndicatorPercent(next, range) }
+			indicator: this.indicatorPayload(settings, next)
 		});
 
 		const { command, commandType } = this.resolveCommand(settings);
@@ -467,7 +525,7 @@ export class TapeLightControlAction extends SingletonAction<TapeLightSettings> {
 			const shown = settings.value ?? range.min;
 			await ev.action.setFeedback({
 				value: settings.power === "on" ? this.formatDisplayValue(settings, shown) : "OFF",
-				indicator: { value: settings.power === "on" ? this.toIndicatorPercent(shown, range) : 0 }
+				indicator: this.indicatorPayload(settings, shown, settings.power === "on" ? undefined : 0)
 			});
 		} catch (err) {
 			streamDeck.logger.error(`電源切替に失敗しました: ${String(err)}`);
@@ -615,7 +673,7 @@ export class TapeLightControlAction extends SingletonAction<TapeLightSettings> {
 			const shown = settings.value ?? range.min;
 			await dial.setFeedback({
 				value: status.power === "on" ? this.formatDisplayValue(settings, shown) : "OFF",
-				indicator: { value: status.power === "on" ? this.toIndicatorPercent(shown, range) : 0 }
+				indicator: this.indicatorPayload(settings, shown, status.power === "on" ? undefined : 0)
 			});
 		} catch (err) {
 			streamDeck.logger.error(`status fetch failed: ${String(err)}`);
