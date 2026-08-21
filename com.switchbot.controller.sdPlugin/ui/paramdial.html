@@ -7,80 +7,95 @@
 <style>
 	:root { color-scheme: dark; }
 	* { box-sizing: border-box; }
-	body {
+	html, body {
 		margin: 0;
-		padding: 8px 12px 24px;
-		font-family: -apple-system, "Segoe UI", sans-serif;
+		font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 		font-size: 12px;
+		letter-spacing: -0.25pt;
 		background: #2d2d2d;
-		color: #d8d8d8;
+		color: #9a9a9a;
+	}
+	body { padding: 8px 0 24px; }
+	.section-title, .op-title {
+		display: flex;
+		align-items: center;
+		font-size: 12px;
+		font-weight: normal;
+		margin: 10px 0;
+		padding: 0 10px;
+	}
+	.section-title::before, .section-title::after,
+	.op-title::before, .op-title::after {
+		content: "";
+		flex: 1;
+		height: 1px;
+		background: #3d3d3d;
+		margin: 0 10px;
 	}
 	.hint {
 		font-size: 10.5px;
 		opacity: 0.65;
-		margin: 2px 2px 10px 2px;
+		margin: 2px 10px 10px;
 		line-height: 1.5;
-	}
-	.section-title {
-		font-weight: 600;
-		font-size: 12px;
-		letter-spacing: 0.02em;
-		color: #9fe6da;
-		margin: 18px 0 6px 2px;
-	}
-	.op-title {
-		font-weight: 600;
-		font-size: 12px;
-		letter-spacing: 0.02em;
-		color: #9fe6da;
-		margin: 14px 0 4px 2px;
 	}
 	.field {
 		display: flex;
 		align-items: center;
 		min-height: 30px;
-		padding: 3px 0;
-		border-bottom: 1px solid #3c3c3c;
+		padding: 2px 10px;
 	}
 	.field > label {
-		flex: 0 0 150px;
-		color: #a6a6a6;
-		font-size: 11px;
+		flex: 0 0 112px;
+		text-align: right;
+		padding-right: 8px;
+		font-size: 12px;
+		font-weight: normal;
+		line-height: 1.3;
+		word-break: keep-all;
 	}
+	.field > label:not(:empty):after { content: "："; }
 	.field > .control {
-		flex: 1;
+		flex: 1 1 auto;
 		display: flex;
 		gap: 6px;
 		align-items: center;
-	}
-	input[type="text"], input[type="password"], input[type="number"], select {
-		flex: 1;
-		background: #1e1e1e;
-		border: 1px solid #444;
-		color: #e6e6e6;
-		border-radius: 4px;
-		padding: 5px 6px;
-		font-size: 11.5px;
 		min-width: 0;
 	}
-	input:focus, select:focus { outline: 1px solid #36c7b0; }
+	.button-row { justify-content: flex-end; }
+	input[type="text"], input[type="password"], input[type="number"], select {
+		flex: 1;
+		background: #3d3d3d;
+		border: 1px solid #303030;
+		color: #d8d8d8;
+		border-radius: 0;
+		padding: 5px 6px;
+		font-size: 12px;
+		min-width: 0;
+		font-weight: normal;
+	}
+	input:focus, select:focus { outline: 1px solid #6c6c6c; }
 	.checkbox-row { display: flex; align-items: center; gap: 6px; }
 	.checkbox-row input { width: auto; flex: none; }
 	button {
-		background: #3a3a3a;
-		border: 1px solid #4c4c4c;
+		background: #3d3d3d;
+		border: 1px solid #6e6e6e;
 		color: #d8d8d8;
-		border-radius: 4px;
-		padding: 5px 10px;
+		border-radius: 0;
+		padding: 0 10px;
+		min-height: 23px;
+		height: 23px;
 		font-size: 11px;
 		cursor: pointer;
 		white-space: nowrap;
 	}
-	button:hover { background: #454545; }
+	button:hover { background: #4a4a4a; }
 	button:disabled { opacity: 0.5; cursor: default; }
-	.status-msg { font-size: 10.5px; margin: 2px 2px 8px; min-height: 14px; }
+	.status-msg { font-size: 10.5px; margin: 2px 10px 8px 130px; min-height: 14px; }
 	.status-msg.error { color: #ff8a8a; }
 	.status-msg.ok { color: #8adfc4; }
+	::-webkit-scrollbar { width: 8px; }
+	::-webkit-scrollbar-track { box-shadow: inset 0 0 6px rgba(0,0,0,0.3); margin: 4px; border-radius: 8px; }
+	::-webkit-scrollbar-thumb { background-color: #999999; outline: 1px solid slategrey; border-radius: 8px; }
 	.range-row { display: flex; gap: 6px; }
 	.range-row input { flex: 1 1 0; width: 0; min-width: 0; padding-left: 4px; padding-right: 4px; }
 </style>
@@ -109,7 +124,6 @@
 		<label data-i18n="label.device">デバイス</label>
 		<div class="control">
 			<select id="deviceSelect"></select>
-			<button type="button" id="device-refresh" data-i18n="button.refresh">更新</button>
 		</div>
 	</div>
 
@@ -117,6 +131,12 @@
 		<label data-i18n="paramdial.parameter">パラメーター</label>
 		<div class="control">
 			<select id="command"></select>
+		</div>
+	</div>
+	<div class="field button-field">
+		<label></label>
+		<div class="control button-row">
+			<button type="button" id="device-refresh" data-i18n="button.refresh">更新</button>
 		</div>
 	</div>
 	<div class="field" id="custom-command-field" style="display:none">
@@ -310,12 +330,17 @@
 						'<label>' + PI.t("label.device") + '</label>' +
 						'<div class="control">' +
 							'<select id="' + k + '-deviceSelect"></select>' +
-							'<button type="button" data-refresh="devices" data-group="' + k + '">' + PI.t("button.refresh") + '</button>' +
 						'</div>' +
 					'</div>' +
 					'<div class="field">' +
 						'<label>' + PI.t("label.command") + '</label>' +
 						'<div class="control"><select id="' + k + '-command"></select></div>' +
+					'</div>' +
+					'<div class="field button-field">' +
+						'<label></label>' +
+						'<div class="control button-row">' +
+							'<button type="button" data-refresh="devices" data-group="' + k + '">' + PI.t("button.refresh") + '</button>' +
+						'</div>' +
 					'</div>' +
 					'<div class="field" id="' + k + '-param-field" style="display:none">' +
 						'<label id="' + k + '-param-label">' + PI.t("label.parameter") + '</label>' +
@@ -341,6 +366,11 @@
 						'<label>' + PI.t("label.scene") + '</label>' +
 						'<div class="control">' +
 							'<select id="' + k + '-sceneSelect"></select>' +
+						'</div>' +
+					'</div>' +
+					'<div class="field button-field">' +
+						'<label></label>' +
+						'<div class="control button-row">' +
 							'<button type="button" data-refresh="scenes" data-group="' + k + '">' + PI.t("button.refresh") + '</button>' +
 						'</div>' +
 					'</div>' +
